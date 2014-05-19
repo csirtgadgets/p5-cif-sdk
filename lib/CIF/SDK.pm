@@ -5,6 +5,12 @@ use strict;
 use warnings FATAL => 'all';
 use Mouse;
 
+use constant {
+    TLP_DEFAULT => 'amber',
+};
+
+use CIF::SDK::Logger;
+
 =head1 NAME
 
 CIF::SDK - The great new CIF::SDK!
@@ -15,7 +21,7 @@ Version 0.01
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.01_01';
 
 =head1 SYNOPSIS
 
@@ -39,6 +45,24 @@ if you don't export anything, such as for a purely object-oriented module.
 
 =cut
 
+require Exporter;
+
+our @ISA = qw(Exporter);
+
+our %EXPORT_TAGS = ( 'all' => [ qw(
+    init_logging
+) ] );
+
+our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
+
+use vars qw(
+    $Logger
+);
+
+our @EXPORT = qw(
+    $Logger 
+);
+
 sub function1 {
 }
 
@@ -49,7 +73,44 @@ sub function1 {
 sub function2 {
 }
 
+sub init_logging {
+    my $args        = shift;
+    my $mail_args   = shift;
+	
+    $args = { level => $args } unless(ref($args) && ref($args) eq 'HASH');
+	unless($args->{'category'}){
+		my ($funct,$bin,$line) = caller();
+		$args->{'category'} = $bin;
+	}
 
+    $Logger = CIF::SDK::Logger->new($args);
+   
+    if($args->{'filename'}){
+        my $appender = Log::Log4perl::Appender->new(
+            'Log::Log4perl::Appender::File', 
+            mode                => 'append',
+            %$args
+        );
+        $appender->layout(
+            Log::Log4perl::Layout::PatternLayout->new(
+                $Logger->get_layout()
+            )
+        );
+        $Logger->get_logger()->add_appender($appender);
+    }
+    
+    if($mail_args){
+        my $appender = Log::Log4perl::Appender->new(
+        "Log::Dispatch::Email::MIMELite",
+            %$mail_args,
+            buffered    => 0,
+            layout              => Log::Log4perl::Layout::PatternLayout->new(),
+            ConversionPattern   => $Logger->get_layout(),
+        );
+        $Logger->get_logger()->add_appender($appender);
+    }
+    $Logger = $Logger->get_logger();
+}
 
 =head1 AUTHOR
 

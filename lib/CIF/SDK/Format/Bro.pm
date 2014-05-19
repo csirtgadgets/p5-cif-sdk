@@ -1,7 +1,10 @@
+package CIF::SDK::Format::Bro;
+
 use strict;
 use warnings;
 
-package CIF::SDK::Format::Bro;
+sub understands {}
 
+sub process {}
 
 1;

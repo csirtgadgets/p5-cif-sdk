@@ -6,7 +6,7 @@ use warnings;
 use Mouse;
 use JSON::XS;
 
-with 'CIF::Format';
+with 'CIF::SDK::Format';
 
 sub understands {
     my $self = shift;

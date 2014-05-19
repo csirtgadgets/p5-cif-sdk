@@ -10,23 +10,20 @@ use strict;
 use warnings;
 use feature 'say';
 
-use CIF qw/init_logging $Logger hash_create_random/;
-use CIF::Client;
-use JSON::XS;
+use CIF::SDK qw/init_logging $Logger/;
+use CIF::SDK::Client;
+use CIF::SDK::FormatFactory;
 use Getopt::Long;
 use Data::Dumper;
 use Carp;
-use Time::HiRes qw(tv_interval);
 
-my $debug     	= 0;
-my $verbose		= 0;
 my $help;
-my $man;
-my $remote      = 'tcp://localhost';
-my $port        = CIF::DEFAULT_PORT();
+my $remote      = 'http://localhost';
+my $port        = 8080;
+my $timeout     = 300;
 my $query;
 my $group;
-my $token       = hash_create_random();
+my $token       = '1234';
 my $limit       = 500;
 my $confidence  = 0;
 my $format      = 'table';
@@ -36,6 +33,8 @@ my $subscriber  = 0;
 my $nolog       = 0;
 my $submit		= 0;
 my $ping_ttl	= 4;
+my $debug       = 0;
+my $verbose     = 0;
 
 my $config = $ENV{'HOME'}.'/.cif';
 
@@ -44,7 +43,7 @@ GetOptions(
     'help|h'        => \$help, 
     'config|C=s'    => \$config,
     'debug|d'       => \$debug,
-    'verbose|v'   	=> \$verbose,
+    'verbose|v'     => \$verbose,
     
     'remote|R=s'        => \$remote,
     'query|q=s'         => \$query,
@@ -63,7 +62,7 @@ GetOptions(
 ) or die(usage());
 
 die(usage()) if($help);
-die(usage()) unless($query || $ping || $submit || $subscriber);
+die(usage()) unless($query || $ping || $submit);
 
 $debug = ($debug) ? 'INFO' : 'ERROR';
 $debug = 'DEBUG' if($verbose);
@@ -74,6 +73,7 @@ init_logging(
         category	=> 'cif',
     }, 
 );
+
 
 if($submit){
     $submit = [];
@@ -92,8 +92,6 @@ Usage: $0 [OPTION]
     -R, --remote=STRING     specify the remote, default: $remote
     -C, --config=FILE       specify cofiguration file, default: ~/.cif 
     -f, --format=FORMAT     specify the output format, default: $format
-    -d, --debug             turn on debugging
-    -v, --verbose           turn up debug verbosity [1-10]
     -h, --help              this message       
     
 Advanced Options:
@@ -116,63 +114,27 @@ Ping Options:
 EOF
 }
 
-if($subscriber){
-    $remote .= ':'.CIF::DEFAULT_PUBLISHER_PORT();
-} else {
-    $remote .= ':'.CIF::DEFAULT_PORT();
-}
-
-my $cli = CIF::Client->new({
-    remote          => $remote,
-    Token           => $token,
-    encoder_pretty  => 1,
-    subscriber      => $subscriber,
+my $cli = CIF::SDK::Client->new({
+    token   => $token,
+    port    => $port,
+    remote  => $remote,
+    timeout => $timeout,
 });
 
-my ($ret,$err);
-if($ping){
-    say 'pinging: '.$remote.'...';
-    my $d = 0;
-    $SIG{'INT'} = sub { $d = 1; };
-    my ($x,$y) = (0, $ping_ttl);
-    while(!$d){
-        $ret = $cli->ping();
-        say 'roundtrip: '.$ret.' ms';
-        select(undef,undef,undef,1);
-        $x++ if($y); # increase if we're not going infinately
-        $d = 1 if($x && ($x == $y)); # done if we reach ttl
-    }
-    say 'done...';
-    exit(0);
-} elsif($query){
+my ($err,$ret);
+if($query){
     ($err,$ret) = $cli->search({
-        Query       => $query,
-        Tags        => $tags,
-        group       => $group,
-        limit       => $limit,
+        query       => $query,
         confidence  => $confidence,
+        limit       => $limit,
     });
     croak($err) if($err);
-    $ret = $cli->format({ data => $ret, format => $format });
+    my $formatter = CIF::SDK::FormatFactory->new_plugin({ format => $format });
+    my $text = $formatter->process($ret);
+    say $text;
 } elsif($submit){
-    ($err,$ret) = $cli->submit({
-        Observables => $submit,
-    });
-    croak($err) if($err);
-    $ret = join("\n",map { $_ = "id: $_" } @$ret );
-    $ret = "success: \n".$ret;
-} elsif($subscriber){
-    require AnyEvent;
-    my $done = AnyEvent->condvar();
-    $SIG{'INT'} = sub { $done->send(); };
-    debug('subbing...');
-    my $w = $cli->subscribe(sub {
-        while($cli->has_pollin()){
-            my $msg = $cli->receive();
-            say Dumper(@$msg);
-        }
-    });
-    $done->recv();
+    
+} elsif($ping){
+    
 }
 
-say $ret if($ret);

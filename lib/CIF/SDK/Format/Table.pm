@@ -7,12 +7,11 @@ use Mouse;
 use Text::Table;
 use DateTime;
 
-with 'CIF::Format';
+with 'CIF::SDK::Format';
 
 sub understands {
     my $self = shift;
     my $args = shift;
-
     return unless($args->{'format'});
     return 1 if($args->{'format'} eq 'table');
 }
@@ -20,7 +19,7 @@ sub understands {
 sub process {
     my $self = shift;
     my $data = shift;
-
+    
     my @header = map { $_, { is_sep => 1, title => '|' } } @{$self->get_columns()};
     pop(@header);
     my $table = Text::Table->new(@header);
@@ -31,7 +30,7 @@ sub process {
             my $x = $d->{$c};
             $x = join(',',@$x) if(ref($x) eq 'ARRAY');
             for($c){
-                if(/time$/){
+                if($x && /time$/){
                     $x = DateTime->from_epoch(epoch => $x);
                     $x = $x->ymd().'T'.$x->hms().'Z';
                 }

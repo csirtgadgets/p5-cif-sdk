@@ -8,10 +8,11 @@ use Mouse;
 use Snort::Rule;
 use Regexp::Common qw/net/;
 use Parse::Range qw(parse_range);
+use CIF::SDK;
 
 use constant DEFAULT_START_SID  => 50000;
 
-with 'CIF::Format';
+with 'CIF::SDK::Format';
 
 has 'start_sid' => (
     is  => 'ro',
@@ -57,7 +58,9 @@ sub process {
         my $dstport     = 'any';
         my $urlhost     = undef;
         my $dnsdomain   = undef;
+        my $tlp         = $_->{'tlp'} || CIF::SDK::TLP_DEFAULT();
         my ($urlport, $urlfile);
+        
 
         if (isipv4($_->{'observable'})) {
             $dstnet = $_->{'observable'};
@@ -85,7 +88,13 @@ sub process {
                 next;
             }
         }
-        my $action = ($_->{'tags'} =~ /whitelist/) ? 'pass' : 'alert';
+        my $action = 'alert';
+        foreach my $t (@{$_->{'tags'}}){
+            if($t =~ /whitelist/){
+                $action = 'pass';
+                last;
+            }
+        }
         my $r = Snort::Rule->new(
             -action => $action,
             -proto  => translate_proto($_->{'protocol'}),
@@ -98,7 +107,7 @@ sub process {
 
         my $reference = make_snort_ref($_->{'altid'});
 
-        $r->opts('msg',$msg_prefix . $_->{'tlp'}.' - '.join(',',@{$_->{'tags'}}));
+        $r->opts('msg',$msg_prefix . $tlp.' - '.join(',',@{$_->{'tags'}}));
         $r->opts('threshold', $thresh) if $thresh;
         $r->opts('tag', $tag) if $tag;
         $r->opts('classtype', $classtype) if $classtype;
