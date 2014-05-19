@@ -1,4 +1,4 @@
-package CIF::SDK::Context;
+package CIF::SDK::Client;
 
 use strict;
 use warnings;
