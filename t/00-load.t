@@ -10,19 +10,18 @@ use Data::Dumper;
 
 BEGIN {
     use_ok( 'CIF::SDK' ) || print "Bail out!\n";
-    use_ok('CIF::SDK::Context') || print "Bail out!\n";
+    use_ok('CIF::SDK::Client') || print "Bail out!\n";
 }
 
 diag( "Testing CIF::SDK $CIF::SDK::VERSION, Perl $], $^X" );
 
-my $context = CIF::SDK::Context->new({
+my $context = CIF::SDK::Client->new({
     token   => '1234',
     port    => 8080,
     host    => 'http://localhost',
     timeout => 10,
 });
 
-warn Dumper($context);
 my ($err,$ret);
 ($err,$ret) = $context->submit({
     observable  => 'example.com',
@@ -34,6 +33,5 @@ my ($err,$ret);
 });
 warn $err if($err);
 
-warn Dumper($ret) if($ret);
 
 done_testing();

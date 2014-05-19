@@ -1,7 +1,8 @@
-use 5.006;
+use 5.011;
 use strict;
 use warnings FATAL => 'all';
 use ExtUtils::MakeMaker;
+use ExtUtils::MakeMaker::CPANfile;
 
 WriteMakefile(
     NAME             => 'CIF::SDK',
@@ -9,8 +10,8 @@ WriteMakefile(
     VERSION_FROM     => 'lib/CIF/SDK.pm',
     ABSTRACT_FROM    => 'lib/CIF/SDK.pm',
     LICENSE          => 'Artistic_2_0',
-    PL_FILES         => {},
-    MIN_PERL_VERSION => 5.006,
+    EXE_FILES       => ['bin/cif'],
+    MIN_PERL_VERSION => 5.011,
     CONFIGURE_REQUIRES => {
         'ExtUtils::MakeMaker' => 0,
     },

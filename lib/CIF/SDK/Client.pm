@@ -129,7 +129,6 @@ sub submit {
     my $uri = $self->get_host().':'.$self->get_port().'/?token='.$self->get_token();
     my $resp = $self->get_handle->post($uri,{ content => $args });
 
-    warn ::Dumper($resp);
     my $content = decode_json($resp->{'content'});
 
     return $content->{'message'} if($resp->{'status'} > 399);
