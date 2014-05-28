@@ -8,7 +8,7 @@ use CIF::SDK::Logger;
 
 =head1 NAME
 
-CIF::SDK - The great new CIF::SDK!
+CIF::SDK - The CIF Software Development Kit
 
 =head1 VERSION
 
@@ -20,23 +20,39 @@ our $VERSION = '0.01_01';
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
+the SDK is a thin development kit for developing CIF applications
 
-Perhaps a little code snippet.
+    use 5.011;
+    use CIF::SDK::Client;
+    use feature 'say';
 
-    use CIF::SDK;
-
-    my $foo = CIF::SDK->new();
-    ...
+    my $context = CIF::SDK::Client->new({
+        token       => '1234',
+        remote      => 'https://localhost/api',
+        timeout     => 10,
+        verify_ssl  => 0,
+    });
+    
+    my ($err,$ret) = $cli->ping();
+    say 'roundtrip: '.$ret.' ms';
+    
+    ($err,$ret) = $cli->search({
+        query       => $query,
+        confidence  => $confidence,
+        limit       => $limit,
+    });
+    
+    my $formatter = CIF::SDK::FormatFactory->new_plugin({ format => 'json' });
+    my $text = $formatter->process($ret);
+    say $text;
+    
 
 =head1 EXPORT
 
 A list of functions that can be exported.  You can delete this section
 if you don't export anything, such as for a purely object-oriented module.
 
-=head1 SUBROUTINES/METHODS
-
-=head2 function1
+init_logging $Logger
 
 =cut
 

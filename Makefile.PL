@@ -2,7 +2,6 @@ use 5.011;
 use strict;
 use warnings FATAL => 'all';
 use ExtUtils::MakeMaker;
-use ExtUtils::MakeMaker::CPANfile;
 
 WriteMakefile(
     NAME             => 'CIF::SDK',
@@ -19,13 +18,14 @@ WriteMakefile(
         'Test::More' => 0,
     },
     PREREQ_PM => {
-        'Mouse'             => 2.2,
+        'Mouse'             => 2.1,
         'JSON::XS'          => 0,
         'Text::Table'       => 0,
         'Snort::Rule'       => 0,
         'Regexp::Common'    => 0,
         'Parse::Range'      => 0,
         'Log::Log4perl'     => 0,
+        'Time::HiRes'       => 0,
         
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },

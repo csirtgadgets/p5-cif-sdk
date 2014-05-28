@@ -1,0 +1,7 @@
+blib
+.git
+.travis.yml
+.project
+.bak
+.swp
+MYMETA.*

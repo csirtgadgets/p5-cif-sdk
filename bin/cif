@@ -73,6 +73,8 @@ init_logging(
     },
 );
 
+die(usage()."\nmissing Token (--token|-T)\n") unless($token);
+
 
 if($submit){
     $submit = [];

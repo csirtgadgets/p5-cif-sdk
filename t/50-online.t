@@ -17,7 +17,7 @@ BEGIN {
 
 my $context = CIF::SDK::Client->new({
     token       => '1234',
-    remote      => 'https://localhost:8443/api',
+    remote      => 'https://localhost/api',
     timeout     => 10,
     verify_ssl  => 0,
 });

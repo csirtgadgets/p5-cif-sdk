@@ -1,9 +1,25 @@
+bin/cif
 Changes
+cpanfile
+ignore.txt
 lib/CIF/SDK.pm
+lib/CIF/SDK/Client.pm
+lib/CIF/SDK/Format.pm
+lib/CIF/SDK/Format/Bro.pm
+lib/CIF/SDK/Format/Csv.pm
+lib/CIF/SDK/Format/Json.pm
+lib/CIF/SDK/Format/Snort.pm
+lib/CIF/SDK/Format/Table.pm
+lib/CIF/SDK/FormatFactory.pm
+lib/CIF/SDK/Logger.pm
+Makefile
 Makefile.PL
 MANIFEST			This list of files
+MANIFEST.SKIP
 README
+README.md
 t/00-load.t
+t/50-online.t
 t/manifest.t
 t/pod-coverage.t
 t/pod.t

@@ -9,6 +9,40 @@ use CIF::SDK;
 use JSON qw(encode_json decode_json);
 use Time::HiRes qw(tv_interval gettimeofday);
 
+=head1 NAME
+
+CIF::SDK::Client - The SDK Client
+
+=head1 SYNOPSIS
+
+the SDK is a thin development kit for developing CIF applications
+
+    use 5.011;
+    use CIF::SDK::Client;
+    use feature 'say';
+
+    my $context = CIF::SDK::Client->new({
+        token       => '1234',
+        remote      => 'https://localhost/api',
+        timeout     => 10,
+        verify_ssl  => 0,
+    });
+    
+    my ($err,$ret) = $cli->ping();
+    say 'roundtrip: '.$ret.' ms';
+    
+    ($err,$ret) = $cli->search({
+        query       => $query,
+        confidence  => $confidence,
+        limit       => $limit,
+    });
+    
+    my $formatter = CIF::SDK::FormatFactory->new_plugin({ format => '{ json | csv | snort | bro }' });
+    my $text = $formatter->process($ret);
+    say $text;
+
+=cut
+
 use constant {
     REMOTE_DEFAULT    => 'https://localhost/api',
     HEADERS_DEFAULT => {
@@ -135,8 +169,8 @@ sub ping {
     my $resp = $self->get_handle()->get($uri);
     
     return $resp->{'reason'} unless($resp->{'status'}) eq '200';
-    my $t1 = decode_json($resp->{'content'})->{'timestamp'};
-    return (undef,tv_interval($t0,[gettimeofday]),$t1);
+    my $t1 = tv_interval($t0,[gettimeofday()]);
+    return (undef,$t1);
 }
 
 1;
