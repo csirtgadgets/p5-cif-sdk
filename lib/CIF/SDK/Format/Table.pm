@@ -5,7 +5,6 @@ use warnings;
 
 use Mouse;
 use Text::Table;
-use DateTime;
 
 with 'CIF::SDK::Format';
 
@@ -29,13 +28,6 @@ sub process {
         foreach my $c (@{$self->get_columns()}){
             my $x = $d->{$c};
             $x = join(',',@$x) if(ref($x) eq 'ARRAY');
-            for($c){
-                if($x && /time$/){
-                    $x = DateTime->from_epoch(epoch => $x);
-                    $x = $x->ymd().'T'.$x->hms().'Z';
-                }
-                last();
-            }
             push(@array,$x);
         }
         $table->load(\@array);

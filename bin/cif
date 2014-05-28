@@ -5,7 +5,6 @@ BEGIN {
     use local::lib "$FindBin::Bin/..";
 }
 
-use 5.014002;
 use strict;
 use warnings;
 use feature 'say';
@@ -18,23 +17,22 @@ use Data::Dumper;
 use Carp;
 
 my $help;
-my $remote      = 'http://localhost';
-my $port        = 8080;
-my $timeout     = 300;
+my $remote          = 'https://localhost:443/api';
+my $no_verify_ssl   = 0;
+my $timeout         = 300;
 my $query;
 my $group;
-my $token       = '1234';
-my $limit       = 500;
-my $confidence  = 0;
-my $format      = 'table';
-my $ping        = 0;
+my $token;
+my $limit           = 500;
+my $confidence      = 0;
+my $format          = 'table';
+my $ping            = 0;
 my $tags;
-my $subscriber  = 0;
-my $nolog       = 0;
-my $submit		= 0;
-my $ping_ttl	= 4;
-my $debug       = 0;
-my $verbose     = 0;
+my $nolog           = 0;
+my $submit		    = 0;
+my $ping_ttl        = 4;
+my $debug           = 0;
+my $verbose         = 0;
 
 my $config = $ENV{'HOME'}.'/.cif';
 
@@ -54,9 +52,10 @@ GetOptions(
     'confidence|c=i'    => \$confidence,
     'tags|t=s'          => \$tags,
     
+    'no-verify-ssl'     => \$no_verify_ssl,
+    
     'ping|p'            => \$ping,
     'format|f=s'        => \$format,
-    'subscriber|S'      => \$subscriber,
     'nolog|n'           => \$nolog,
     'ttl=n'				=> \$ping_ttl,
 ) or die(usage());
@@ -71,7 +70,7 @@ init_logging(
     { 
         level       => $debug,
         category	=> 'cif',
-    }, 
+    },
 );
 
 
@@ -88,26 +87,29 @@ sub usage {
 
 Usage: $0 [OPTION]
 
- Options:
+Options:
+
     -R, --remote=STRING     specify the remote, default: $remote
-    -C, --config=FILE       specify cofiguration file, default: ~/.cif 
+    -T, --token=STRING      specify an access token
+    -q, --query=STRING      specify a search
     -f, --format=FORMAT     specify the output format, default: $format
     -h, --help              this message       
     
 Advanced Options:
-    -T, --token=STRING          specify an access token
+
     -g, --group=STRING          specify a default group to use
     -l, --limit=INT             specify a return limit, default: $limit
     -c, --confidence=INT        specify a default confidence, default: $confidence
     -t, --tags=STRING,STRING    specify tags to filter against
     -s, --submit                submit data via STDIN (json keypairs)
+    --no-verify-ssl             turn off SSL/TLS verification
 
 Ping Options:
 	--ttl=INT				specify number of pings to send, default: $ping_ttl
 							(0 infinate, halt with CTRL+C)
 
  Examples:
-    $0 -C $ENV{'HOME'}/.cif -q example.com
+    $0 -q example.com -v
     $0 -t botnet,zeus -c 85
     $0 -q example.com -t botnet,zeus -c 85 -l 50
 
@@ -115,10 +117,10 @@ EOF
 }
 
 my $cli = CIF::SDK::Client->new({
-    token   => $token,
-    port    => $port,
-    remote  => $remote,
-    timeout => $timeout,
+    token       => $token,
+    remote      => $remote,
+    timeout     => $timeout,
+    verify_ssl  => ($no_verify_ssl) ? 0 : 1,
 });
 
 my ($err,$ret);
@@ -135,6 +137,18 @@ if($query){
 } elsif($submit){
     
 } elsif($ping){
-    
+    say 'pinging: '.$remote.'...';
+    my $d = 0;
+    $SIG{'INT'} = sub { $d = 1; };
+    my ($x,$y) = (0, $ping_ttl);
+    while(!$d){
+        $ret = $cli->ping();
+        say 'roundtrip: '.$ret.' ms';
+        select(undef,undef,undef,1);
+        $x++ if($y); # increase if we're not going infinately
+        $d = 1 if($x && ($x == $y)); # done if we reach ttl
+    }
+    say 'done...';
+    exit(0);
 }
 

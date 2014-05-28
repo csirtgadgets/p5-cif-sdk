@@ -19,8 +19,14 @@ WriteMakefile(
         'Test::More' => 0,
     },
     PREREQ_PM => {
-        #'ABC'              => 1.6,
-        #'Foo::Bar::Module' => 5.0401,
+        'Mouse'             => 2.2,
+        'JSON::XS'          => 0,
+        'Text::Table'       => 0,
+        'Snort::Rule'       => 0,
+        'Regexp::Common'    => 0,
+        'Parse::Range'      => 0,
+        'Log::Log4perl'     => 0,
+        
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => 'CIF-SDK-*' },

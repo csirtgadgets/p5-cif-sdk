@@ -1,13 +1,8 @@
 package CIF::SDK;
 
-use 5.012;
 use strict;
 use warnings FATAL => 'all';
 use Mouse;
-
-use constant {
-    TLP_DEFAULT => 'amber',
-};
 
 use CIF::SDK::Logger;
 
@@ -63,19 +58,8 @@ our @EXPORT = qw(
     $Logger 
 );
 
-sub function1 {
-}
-
-=head2 function2
-
-=cut
-
-sub function2 {
-}
-
 sub init_logging {
     my $args        = shift;
-    my $mail_args   = shift;
 	
     $args = { level => $args } unless(ref($args) && ref($args) eq 'HASH');
 	unless($args->{'category'}){
@@ -95,17 +79,6 @@ sub init_logging {
             Log::Log4perl::Layout::PatternLayout->new(
                 $Logger->get_layout()
             )
-        );
-        $Logger->get_logger()->add_appender($appender);
-    }
-    
-    if($mail_args){
-        my $appender = Log::Log4perl::Appender->new(
-        "Log::Dispatch::Email::MIMELite",
-            %$mail_args,
-            buffered    => 0,
-            layout              => Log::Log4perl::Layout::PatternLayout->new(),
-            ConversionPattern   => $Logger->get_layout(),
         );
         $Logger->get_logger()->add_appender($appender);
     }

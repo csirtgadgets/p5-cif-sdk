@@ -6,32 +6,20 @@ use warnings FATAL => 'all';
 use Test::More;
 use Data::Dumper;
 
-# https://developer.github.com/v3/
-
 BEGIN {
-    use_ok( 'CIF::SDK' ) || print "Bail out!\n";
+    use_ok('CIF::SDK') || print "Bail out!\n";
     use_ok('CIF::SDK::Client') || print "Bail out!\n";
 }
 
 diag( "Testing CIF::SDK $CIF::SDK::VERSION, Perl $], $^X" );
 
 my $context = CIF::SDK::Client->new({
-    token   => '1234',
-    port    => 8080,
-    host    => 'http://localhost',
-    timeout => 10,
+    token       => '1234',
+    remote      => 'https://localhost:8443/api',
+    timeout     => 10,
+    verify_ssl  => 0,
 });
 
-my ($err,$ret);
-($err,$ret) = $context->submit({
-    observable  => 'example.com',
-    confidence  => 50,
-    tlp         => 'green',
-    tags        => ['zeus','botnet'],
-    provider    => 'me.com',
-    
-});
-warn $err if($err);
-
-
+ok($context->get_remote() =~ /^https/, 'testing remote...');
+ok($context->get_headers()->{'Accept'} =~ /json/, 'testing headers...');
 done_testing();

@@ -10,8 +10,7 @@ use JSON qw(encode_json decode_json);
 use Time::HiRes qw(tv_interval gettimeofday);
 
 use constant {
-    PORT_DEFAULT    => 443,
-    REMOTE_DEFAULT    => 'https://localhost',
+    REMOTE_DEFAULT    => 'https://localhost/api',
     HEADERS_DEFAULT => {
         'Accept'    => 'application/json',
     },
@@ -30,13 +29,6 @@ has 'token' => (
     is      => 'ro',
     isa     => 'Str',
     reader  => 'get_token',
-);
-
-has 'port' => (
-    is      => 'ro',
-    isa     => 'Int',
-    reader  => 'get_port',
-    default => PORT_DEFAULT(),
 );
 
 has 'proxy' => (
@@ -91,7 +83,7 @@ sub request {
     my $self = shift;
     my $args = shift;
     
-    my $uri = $self->get_remote().':'.$self->get_port();
+    my $uri = $self->get_remote();
     
     $uri = $uri . '?token='.$self->get_token();
     $uri .= '&confidence='.$args->{'confidence'} if($args->{'confidence'});
@@ -105,13 +97,13 @@ sub search {
     my $self = shift;
     my $args = shift;
     
-    my $uri = $self->get_remote().':'.$self->get_port().'/'.$args->{'query'}.'?token='.$self->get_token();
+    my $uri = $self->get_remote().'/'.$args->{'query'}.'?token='.$self->get_token();
     $uri .= '&confidence='.$args->{'confidence'} if($args->{'confidence'});
     $uri .= '&limit='.$args->{'limit'} if($args->{'limit'});
     $uri .= '&group='.$args->{'group'} if($args->{'group'});
     
     my $resp = $self->get_handle()->get($uri);
-    return 'request failed('.$resp->{'status'}.'): '.$resp->{'reason'} unless($resp->{'status'} eq '200');
+    return 'request failed('.$resp->{'status'}.'): '.$resp->{'reason'}.': '.$resp->{'content'} unless($resp->{'status'} eq '200');
     
     return (undef,decode_json($resp->{'content'}));
     
@@ -125,7 +117,7 @@ sub submit {
     
     $args = encode_json($args);
     
-    my $uri = $self->get_remote().':'.$self->get_port().'/?token='.$self->get_token();
+    my $uri = $self->get_remote().'/?token='.$self->get_token();
     my $resp = $self->get_handle->post($uri,{ content => $args });
 
     my $content = decode_json($resp->{'content'});
@@ -139,7 +131,7 @@ sub ping {
     
     my $t0 = [gettimeofday()];
     
-    my $uri = $self->get_remote.':'.$self->get_port().'/_ping?token='.$self->get_token();
+    my $uri = $self->get_remote.'/_ping?token='.$self->get_token();
     my $resp = $self->get_handle()->get($uri);
     
     return $resp->{'reason'} unless($resp->{'status'}) eq '200';
