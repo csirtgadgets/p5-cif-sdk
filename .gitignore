@@ -1,3 +1,5 @@
+*.gz
+*.bak
 MYMETA.*
 Makefile
 blib/

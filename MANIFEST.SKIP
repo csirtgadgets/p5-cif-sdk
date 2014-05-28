@@ -1,3 +1,5 @@
+*.gz
+MANIFEST
 blib
 .git
 .travis.yml
