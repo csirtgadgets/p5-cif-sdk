@@ -113,19 +113,23 @@ sub _build_handle {
     );   
 }
 
-sub request {
-    my $self = shift;
-    my $args = shift;
-    
-    my $uri = $self->get_remote();
-    
-    $uri = $uri . '?token='.$self->get_token();
-    $uri .= '&confidence='.$args->{'confidence'} if($args->{'confidence'});
-    $uri .= '&limit='.$args->{'limit'} if($args->{'limit'});
-    $uri .= '&group='.$args->{'group'} if($args->{'group'});
-}
+=head1 Object Methods
 
-# main
+=head2 new
+
+=head2 search
+
+=over
+
+  ($err,$ret) = $client->search({ 
+      query         => 'example.com', 
+      confidence    => 25, 
+      limit         => 500
+  });
+
+=back
+
+=cut
 
 sub search {
     my $self = shift;
@@ -143,6 +147,21 @@ sub search {
     
 }
 
+=head2 submit
+
+=over
+
+  ($err,$ret) = $client->submit({ 
+      observable    => 'example.com', 
+      tlp           => 'green', 
+      tags          => ['zeus', 'botnet'], 
+      provider      => 'me@example.com' 
+  });
+
+=back
+
+=cut
+
 sub submit {
     my $self = shift;
     my $args = shift;
@@ -159,6 +178,16 @@ sub submit {
     return $content->{'message'} if($resp->{'status'} > 399);
     return (undef, $content, $resp);
 }
+
+=head2 ping
+
+=over
+
+  ($err,$ret) = $client->ping();
+
+=back
+
+=cut
 
 sub ping {
     my $self = shift;
