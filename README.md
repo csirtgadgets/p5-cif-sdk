@@ -64,7 +64,7 @@ You can also look for information at:
    https://github.com/csirtgadgets/cif-sdk-perl
 
 
-## License and Copyright
+# License and Copyright
 
 Copyright (C) 2014 [the CSIRT Gadgets Foundation](http://csirtgadgets.org)
 
