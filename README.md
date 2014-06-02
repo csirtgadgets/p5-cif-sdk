@@ -66,7 +66,7 @@ You can also look for information at:
 
 ## License and Copyright
 
-Copyright (C) 2014 "Wes Young" <wes@barely3am.com>
+Copyright (C) 2014 [the CSIRT Gadgets Foundation](http://csirtgadgets.org)
 
 Free use of this software is granted under the terms of the GNU Lesser General Public License (LGPLv3). For details see the files COPYING included with the distribution.
 
