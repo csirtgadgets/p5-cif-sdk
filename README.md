@@ -1,4 +1,5 @@
 # CIF Software Development Kit for Perl
+[![Build Status](https://travis-ci.org/csirtgadgets/cif-sdk-perl.png?branch=master)](https://travis-ci.org/csirtgadgets/cif-sdk-perl)
 
 ## INSTALLATION
 
