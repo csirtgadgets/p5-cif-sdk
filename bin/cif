@@ -32,7 +32,7 @@ my $nolog           = 0;
 my $submit		    = 0;
 my $ping_ttl        = 4;
 my $debug           = 0;
-my $verbose         = 0;
+my $verbosity       = 0;
 
 my $config = $ENV{'HOME'}.'/.cif';
 
@@ -41,7 +41,7 @@ GetOptions(
     'help|h'        => \$help, 
     'config|C=s'    => \$config,
     'debug|d'       => \$debug,
-    'verbose|v'     => \$verbose,
+    'verbosity|v+'  => \$verbosity,
     
     'remote|R=s'        => \$remote,
     'query|q=s'         => \$query,
@@ -63,15 +63,20 @@ GetOptions(
 die(usage()) if($help);
 die(usage()) unless($query || $ping || $submit);
 
-$debug = ($debug) ? 'INFO' : 'ERROR';
-$debug = 'DEBUG' if($verbose);
+my $loglevel = ($debug) ? 'DEBUG' : 'WARN';
 
 init_logging(
     { 
-        level       => $debug,
+        level       => $loglevel,
         category	=> 'cif',
     },
 );
+
+if($verbosity){
+    unless($debug){ # we're already at TRACE
+        $Logger->more_logging($verbosity);
+    }
+}
 
 die(usage()."\nmissing Token (--token|-T)\n") unless($token);
 
