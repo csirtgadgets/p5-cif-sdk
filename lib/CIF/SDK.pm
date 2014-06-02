@@ -26,7 +26,7 @@ the SDK is a thin development kit for developing CIF applications
     use CIF::SDK::Client;
     use feature 'say';
 
-    my $context = CIF::SDK::Client->new({
+    my $cli = CIF::SDK::Client->new({
         token       => '1234',
         remote      => 'https://localhost/api',
         timeout     => 10,
