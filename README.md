@@ -11,6 +11,46 @@ To install this module, run the following commands:
 	make
 	make test
 	make install
+	
+## EXAMPLES
+### Client
+  ```bash
+  $ cif -T 1234 -R 'https://localhost/api' -q example.com
+  ```
+  
+### API
+#### Search
+  ```perl
+  use feature 'say';
+  use CIF::SDK::Client;
+  use CIF::SDK::FormatFactory;
+
+  my $cli = CIF::SDK::Client->new({
+    token       => $token,
+    remote      => $remote,
+    timeout     => $timeout,
+  });
+
+  my ($err,$ret) = $cli->search({
+  	query       => $query,
+        confidence  => $confidence,
+        limit       => $limit,
+  });
+
+  my $formatter = CIF::SDK::FormatFactory->new_plugin({ format => 'table' });
+  my $text = $formatter->process($ret);
+  say $text;
+  ```
+#### Ping
+  ```perl
+  use feature 'say';
+  use CIF::SDK::Client;
+  
+  ...
+  
+  my $ret = $cli->ping();
+  say 'roundtrip: '.$ret.' ms';
+  ```
 
 ## SUPPORT AND DOCUMENTATION
 
