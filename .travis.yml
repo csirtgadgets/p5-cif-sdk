@@ -1,6 +1,5 @@
 language: perl
 perl:
-    - 5.11
     - 5.18
 
 before_install:
