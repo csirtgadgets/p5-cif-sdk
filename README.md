@@ -1,4 +1,6 @@
 # CIF Software Development Kit for Perl
+The CIF Software Development Kit (SDK) for Perl contains library code and examples designed to enable developers to build applications using CIF.
+
 [![Build Status](https://travis-ci.org/csirtgadgets/cif-sdk-perl.png?branch=master)](https://travis-ci.org/csirtgadgets/cif-sdk-perl)
 
 ## INSTALLATION
