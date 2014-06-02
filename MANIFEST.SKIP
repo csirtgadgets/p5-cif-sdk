@@ -1,4 +1,4 @@
-*.gz
+.gz
 MANIFEST
 blib
 .git
@@ -6,4 +6,4 @@ blib
 .project
 .bak
 .swp
-MYMETA.*
+MYMETA.
