@@ -1,6 +1,6 @@
-# CIF-SDK
+# CIF Software Development Kit for Perl
 
-# INSTALLATION
+## INSTALLATION
 
 To install this module, run the following commands:
 
@@ -9,7 +9,7 @@ To install this module, run the following commands:
 	make test
 	make install
 
-SUPPORT AND DOCUMENTATION
+## SUPPORT AND DOCUMENTATION
 
 After installing, you can find documentation for this module with the
 perldoc command.
@@ -21,15 +21,15 @@ You can also look for information at:
    https://github.com/csirtgadgets/cif-sdk-perl
 
 
-LICENSE AND COPYRIGHT
+## LICENSE AND COPYRIGHT
 
-Copyright (C) 2014 "Wes Young"
+Copyright (C) 2014 "Wes Young" <wes@barely3am.com>
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the the Artistic License (2.0). You may obtain a
 copy of the full license at:
 
-L<http://www.perlfoundation.org/artistic_license_2_0>
+http://www.perlfoundation.org/artistic_license_2_0
 
 Any use, modification, and distribution of the Standard or Modified
 Versions is governed by this Artistic License. By using, modifying or
