@@ -26,7 +26,7 @@ WriteMakefile(
         'Parse::Range'      => 0,
         'Log::Log4perl'     => 0,
         'Time::HiRes'       => 0,
-        'Config::Simple'    => 4.59,
+        'Config::Simple'    => 4.58,
         
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
