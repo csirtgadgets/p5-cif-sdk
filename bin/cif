@@ -7,25 +7,33 @@ BEGIN {
 
 use strict;
 use warnings;
-use feature 'say';
 
 use CIF::SDK qw/init_logging $Logger/;
 use CIF::SDK::Client;
 use CIF::SDK::FormatFactory;
 use Getopt::Long;
-use Data::Dumper;
+use Config::Simple;
 use Carp;
+use Data::Dumper;
+
+use constant {
+    REMOTE_DEFAULT  => 'https://localhost:443/api',
+    TIMEOUT_DEFAULT => 300,
+    LIMIT_DEFAULT   => 500,
+    FORMAT_DEFAULT  => 'table',
+    CONFIG_DEFAULT  => $ENV{'HOME'}.'/.cif',
+};
 
 my $help;
-my $remote          = 'https://localhost:443/api';
+my $remote          = REMOTE_DEFAULT();
 my $no_verify_ssl   = 0;
-my $timeout         = 300;
+my $timeout         = TIMEOUT_DEFAULT();
 my $query;
 my $group;
 my $token;
-my $limit           = 500;
+my $limit           = LIMIT_DEFAULT();
 my $confidence      = 0;
-my $format          = 'table';
+my $format          = FORMAT_DEFAULT();
 my $ping            = 0;
 my $tags;
 my $nolog           = 0;
@@ -33,15 +41,14 @@ my $submit		    = 0;
 my $ping_ttl        = 4;
 my $debug           = 0;
 my $verbosity       = 0;
+my $config          = CONFIG_DEFAULT();
 
-my $config = $ENV{'HOME'}.'/.cif';
-
-Getopt::Long::Configure ("bundling");
+Getopt::Long::Configure("bundling");
 GetOptions(
-    'help|h'        => \$help, 
-    'config|C=s'    => \$config,
-    'debug|d'       => \$debug,
-    'verbosity|v+'  => \$verbosity,
+    'help|h'            => \$help, 
+    'config|C=s'        => \$config,
+    'debug|d'           => \$debug,
+    'verbosity|v+'      => \$verbosity,
     
     'remote|R=s'        => \$remote,
     'query|q=s'         => \$query,
@@ -62,6 +69,18 @@ GetOptions(
 
 die(usage()) if($help);
 die(usage()) unless($query || $ping || $submit);
+
+if(-e $config){
+    $config = Config::Simple->new($config) || croak('config error...');
+    $config = $config->get_block('client') || croak('no client section in config');
+    
+    $remote         = $config->{'remote'} if($config->{'remote'} && $remote eq REMOTE_DEFAULT());
+    $token          = $config->{'token'} if($config->{'token'} && !$token);
+    $no_verify_ssl  = $config->{'no_verify_ssl'} if($config->{'no_verify_ssl'} && !$no_verify_ssl); # double negative
+    $limit          = $config->{'limit'} if($config->{'limit'} && $limit != LIMIT_DEFAULT());
+    $timeout        = $config->{'timeout'} if($config->{'timeout'} && $timeout != TIMEOUT_DEFAULT());
+    $nolog          = $config->{'nolog'} if($config->{'nolog'});
+}
 
 my $loglevel = ($debug) ? 'DEBUG' : 'WARN';
 
@@ -123,39 +142,42 @@ Ping Options:
 EOF
 }
 
+$Logger->info('starting up client...');
 my $cli = CIF::SDK::Client->new({
     token       => $token,
     remote      => $remote,
     timeout     => $timeout,
     verify_ssl  => ($no_verify_ssl) ? 0 : 1,
+    nolog       => $nolog,
 });
 
 my ($err,$ret);
 if($query){
+    $Logger->info('running search...');
     ($err,$ret) = $cli->search({
         query       => $query,
         confidence  => $confidence,
         limit       => $limit,
     });
     croak($err) if($err);
+    $Logger->info('search returned, formatting..');
     my $formatter = CIF::SDK::FormatFactory->new_plugin({ format => $format });
     my $text = $formatter->process($ret);
-    say $text;
+    print $text."\n";
 } elsif($submit){
+    ## TODO
     
 } elsif($ping){
-    say 'pinging: '.$remote.'...';
+    $Logger->info('pinging: '.$remote.'...');
     my $d = 0;
     $SIG{'INT'} = sub { $d = 1; };
     my ($x,$y) = (0, $ping_ttl);
     while(!$d){
         $ret = $cli->ping();
-        say 'roundtrip: '.$ret.' ms';
+        $Logger->info('roundtrip: '.$ret.' ms');
         select(undef,undef,undef,1);
         $x++ if($y); # increase if we're not going infinately
         $d = 1 if($x && ($x == $y)); # done if we reach ttl
     }
-    say 'done...';
-    exit(0);
 }
-
+$Logger->info('done...');
