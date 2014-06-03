@@ -1,3 +1,6 @@
+.old
+.orig
+.build/
 MANIFEST
 *.gz
 *.bak
