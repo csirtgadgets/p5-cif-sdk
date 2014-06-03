@@ -1,7 +1,7 @@
 package CIF::SDK::Client;
 
 use strict;
-use warnings;
+use warnings FATAL => 'all';
 
 use Mouse;
 use HTTP::Tiny;

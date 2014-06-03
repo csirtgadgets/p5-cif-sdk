@@ -6,13 +6,13 @@ BEGIN {
 }
 
 use strict;
-use warnings;
+use warnings FATAL => 'all';
 
 use CIF::SDK qw/init_logging $Logger/;
 use CIF::SDK::Client;
 use CIF::SDK::FormatFactory;
 use Getopt::Long;
-use Config::Simple 4.58;
+use Config::Simple;
 use Carp;
 use Data::Dumper;
 

@@ -1,7 +1,7 @@
 package CIF::SDK::Logger;
 
 use strict;
-use warnings;
+use warnings FATAL => 'all';
 
 use Mouse;
 use Log::Log4perl;
