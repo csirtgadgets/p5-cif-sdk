@@ -10,6 +10,7 @@ use Log::Log4perl::Level;
 use constant LAYOUT_DEFAULT => "[%d{yyyy-MM-dd'T'HH:mm:ss,SSS}Z][%p]: %m%n";
 use constant LAYOUT_DEBUG   => "[%d{yyyy-MM-dd'T'HH:mm:ss,SSS}Z][%p][%C:%L]: %m%n";
 use constant LAYOUT_TRACE   => "[%d{yyyy-MM-dd'T'HH:mm:ss,SSS}Z][%p][%F:%L]: %m%n";
+use constant APPENDER_DEFAULT   => 'Log::Log4perl::Appender::ScreenColoredLevels';
 
 has 'level' => (
     is      => 'ro',
@@ -57,14 +58,20 @@ sub _build_layout {
 
 sub _build_logger {
     my $self = shift;
-    
-    Log::Log4perl->easy_init({
-        level       => $self->get_level(),
-        layout      => $self->get_layout(),
+
+    my $app = Log::Log4perl::Appender->new(
+        APPENDER_DEFAULT(),
+        mode        => 'append',
         name        => $self->get_name(),
-        category    => $self->get_category(),
-    });
-    return Log::Log4perl->get_logger($self->get_category());
+        category    => $self->get_category()
+    );
+    $app->layout(
+        Log::Log4perl::Layout::PatternLayout->new($self->get_layout())
+    );
+    my $rootLogger = Log::Log4perl->get_logger($self->get_category());
+    $rootLogger->level($self->get_level());
+    $rootLogger->add_appender($app);
+    return $rootLogger;
 }
 
 __PACKAGE__->meta()->make_immutable();

@@ -5,7 +5,7 @@ use warnings;
 
 use Mouse;
 use HTTP::Tiny;
-use CIF::SDK;
+use CIF::SDK qw/init_logging $Logger/;
 use JSON qw(encode_json decode_json);
 use Time::HiRes qw(tv_interval gettimeofday);
 
@@ -92,6 +92,13 @@ has 'verify_ssl' => (
     default => 1,
 );
 
+has 'nolog' => (
+    is      => 'ro',
+    isa     => 'Bool',
+    reader  => 'get_nolog',
+    default => 0,
+);
+
 has 'handle' => (
     is      => 'ro',
     isa     => 'HTTP::Tiny',
@@ -100,6 +107,17 @@ has 'handle' => (
 );
 
 # helpers
+
+sub BUILD {
+    my $self = shift;
+    
+    unless($Logger){
+        init_logging({
+            level       => 'WARN',
+            category    => 'CIF::SDK::Client',
+        });
+    }
+}           
 
 sub _build_handle {
     my $self = shift;
@@ -140,9 +158,12 @@ sub search {
     $uri .= '&limit='.$args->{'limit'} if($args->{'limit'});
     $uri .= '&group='.$args->{'group'} if($args->{'group'});
     
+    $Logger->debug('uri created: '.$uri);
+    $Logger->debug('making request...');
     my $resp = $self->get_handle()->get($uri);
     return 'request failed('.$resp->{'status'}.'): '.$resp->{'reason'}.': '.$resp->{'content'} unless($resp->{'status'} eq '200');
     
+    $Logger->debug('success, decoding...');
     return (undef,decode_json($resp->{'content'}));
     
 }
@@ -168,14 +189,21 @@ sub submit {
     
     $args = [$args] if(ref($args) eq 'HASH');
     
+    $Logger->debug('encoding args...');
     $args = encode_json($args);
     
     my $uri = $self->get_remote().'/?token='.$self->get_token();
+    
+    $Logger->debug('uri generated: '.$uri);
+    $Logger->debug('making request...');
     my $resp = $self->get_handle->post($uri,{ content => $args });
-
+    
+    $Logger->debug('decoding response..');
     my $content = decode_json($resp->{'content'});
 
     return $content->{'message'} if($resp->{'status'} > 399);
+    
+    $Logger->debug('success...');
     return (undef, $content, $resp);
 }
 
@@ -191,14 +219,20 @@ sub submit {
 
 sub ping {
     my $self = shift;
+    $Logger->debug('generating ping...');
     
     my $t0 = [gettimeofday()];
     
     my $uri = $self->get_remote.'/_ping?token='.$self->get_token();
+    $Logger->debug('uri generated: '.$uri);
+    $Logger->debug('pinging...');
     my $resp = $self->get_handle()->get($uri);
     
+    $Logger->debug('decoding response: '.$resp->{'status'});
     return $resp->{'reason'} unless($resp->{'status'}) eq '200';
     my $t1 = tv_interval($t0,[gettimeofday()]);
+    
+    $Logger->debug('sucesss...');
     return (undef,$t1);
 }
 
