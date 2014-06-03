@@ -18,7 +18,7 @@ WriteMakefile(
         'Test::More' => 0,
     },
     PREREQ_PM => {
-        'Mouse'             => '2.2.0',
+        'Mouse'             => '2.3.0',
         'JSON::XS'          => 0,
         'Text::Table'       => 0,
         'Snort::Rule'       => 1.07,

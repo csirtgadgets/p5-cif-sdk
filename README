@@ -1,0 +1,32 @@
+CIF-SDK
+
+The CIF Software Development Kit for Perl.
+
+INSTALLATION
+
+To install this module, run the following commands:
+
+    perl Makefile.PL
+    make
+    make test
+    make install
+
+SUPPORT AND DOCUMENTATION
+
+After installing, you can find documentation for this module with the
+perldoc command.
+
+    perldoc CIF::SDK
+    perldoc CIF::SDK::Client
+
+You can also look for information at:
+
+   https://github.com/csirtgadgets/p5-cif-sdk
+
+
+LICENSE AND COPYRIGHT
+
+Copyright (C) 2014 "the CSIRT Gadgets Foundation"
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of the the LGPL (3.0).
