@@ -21,25 +21,38 @@ To install this module, run the following commands:
 ## API
 ### Search
   ```perl
-  use feature 'say';
+  use CIF::SDK qw/init_logging $Logger/;
   use CIF::SDK::Client;
   use CIF::SDK::FormatFactory;
+
+  my $loglevel = ($debug) ? 'DEBUG' : 'WARN';
+
+  init_logging(
+      { 
+          level       => $loglevel,
+          category	=> 'cif',
+      },
+  );
+
+  $Logger->info('starting client...');
 
   my $cli = CIF::SDK::Client->new({
     token       => $token,
     remote      => $remote,
     timeout     => $timeout,
   });
-
+ 
+  $Logger->info('running search...');
   my ($err,$ret) = $cli->search({
   	query       => $query,
         confidence  => $confidence,
         limit       => $limit,
   });
-
+  
+  $Logger->info('formatting results...');
   my $formatter = CIF::SDK::FormatFactory->new_plugin({ format => 'table' });
   my $text = $formatter->process($ret);
-  say $text;
+  print $text."\n";
   ```
 ### Ping
   ```perl
@@ -58,6 +71,7 @@ After installing, you can find documentation for this module with the
 perldoc command.
 
     perldoc CIF::SDK
+    perldoc CIF::SDK::Client
 
 You can also look for information at:
 
