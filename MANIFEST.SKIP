@@ -1,3 +1,7 @@
+dist.ini
+ignore.txt
+.old
+.orig
 .gz
 MANIFEST
 blib
