@@ -115,11 +115,11 @@ Usage: $0 [OPTION]
 
 Options:
 
-    -R, --remote=STRING     specify the remote, default: $remote
-    -T, --token=STRING      specify an access token
-    -q, --query=STRING      specify a search
-    -f, --format=FORMAT     specify the output format, default: $format
-    -h, --help              this message       
+    -R, --remote=STRING         specify the remote, default: $remote
+    -T, --token=STRING          specify an access token
+    -q, --query=STRING          specify a search
+    -f, --format=FORMAT         specify the output format, default: $format
+    -h, --help                  this message       
     
 Advanced Options:
 
@@ -131,9 +131,8 @@ Advanced Options:
     --no-verify-ssl             turn off SSL/TLS verification
 
 Ping Options:
-	--ttl=INT				specify number of pings to send, default: $ping_ttl
-							(0 infinate, halt with CTRL+C)
-
+    --ttl=INT                   specify number of pings to send, default: $ping_ttl
+                                (0 infinate, halt with SIGINT or CTRL+C)
  Examples:
     $0 -q example.com -v
     $0 -t botnet,zeus -c 85
