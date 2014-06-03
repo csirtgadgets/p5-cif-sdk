@@ -73,10 +73,7 @@ perldoc command.
     perldoc CIF::SDK
     perldoc CIF::SDK::Client
 
-You can also look for information at:
-
-   https://github.com/csirtgadgets/cif-sdk-perl
-
+You can also look for information at the [GitHub repo](https://github.com/csirtgadgets/p5-cif-sdk).
 
 # License and Copyright
 
