@@ -12,7 +12,7 @@ We highly recomend using Ubuntu 14.04 LTS.
  cd p5-cif-sdk
  perl Makefile.PL
  cpanm http://cpan.metacpan.org/authors/id/S/SH/SHERZODR/Config-Simple-4.59.tar.gz
- cpanm --installdeps .
+ cpanm --installdeps . --mirror http://cpan.metacpan.org
  make
  make test
  make install
