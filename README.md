@@ -6,7 +6,7 @@ The CIF Software Development Kit (SDK) for Perl contains library code and exampl
 # Installation
 ## Ubuntu
  ```
- sudo apt-get install git build-essential cpanminus
+ sudo apt-get install git build-essential cpanminus libmodule-install-per
  git clone https://github.com/csirtgadgets/p5-cif-sdk.git -b master
  cd p5-cif-sdk
  cpanm --installdeps .
