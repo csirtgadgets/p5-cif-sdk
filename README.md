@@ -4,13 +4,29 @@ The CIF Software Development Kit (SDK) for Perl contains library code and exampl
 [![Build Status](https://travis-ci.org/csirtgadgets/p5-cif-sdk.png?branch=master)](https://travis-ci.org/csirtgadgets/p5-cif-sdk)
 
 # Installation
-## Ubuntu
+We highly recomend using Ubuntu 14.04 LTS.
+## Ubuntu 14
  ```
- sudo apt-get install git build-essential cpanminus libmodule-install-perl
+ sudo apt-get install -y git build-essential cpanminus libmodule-install-perl
  git clone https://github.com/csirtgadgets/p5-cif-sdk.git -b master
  cd p5-cif-sdk
  perl Makefile.PL
+ cpanm http://cpan.metacpan.org/authors/id/S/SH/SHERZODR/Config-Simple-4.59.tar.gz
  cpanm --installdeps .
+ make
+ make test
+ make install
+ ```
+
+## Ubuntu 12
+ ```
+ sudo apt-get install -y git build-essential cpanminus libmodule-install-perl
+ cpanm --self-upgrade --mirror http://cpan.metacpan.org
+ git clone https://github.com/csirtgadgets/p5-cif-sdk.git -b master
+ cd p5-cif-sdk
+ cpanm --mirror http://cpan.metacpan.org ExtUtils::MakeMaker http://cpan.metacpan.org/authors/id/S/SH/SHERZODR/Config-Simple-4.59.tar.gz
+ perl Makefile.PL
+ cpanm --installdeps --mirror http://cpan.metacpan.org .
  make
  make test
  make install
