@@ -2,7 +2,6 @@ package CIF::SDK::Format::Snort;
 
 use strict;
 use warnings;
-use namespace::autoclean;
 
 use Mouse;
 use Snort::Rule;

@@ -3,19 +3,26 @@ The CIF Software Development Kit (SDK) for Perl contains library code and exampl
 
 [![Build Status](https://travis-ci.org/csirtgadgets/p5-cif-sdk.png?branch=master)](https://travis-ci.org/csirtgadgets/p5-cif-sdk)
 
+# Latest Release
+To pull the latest release, simply clone the repository:  
+ ```bash
+ git clone https://github.com/csirtgadgets/p5-cif-sdk.git
+ ```
+
 # Installation
-
 To install this module, run the following commands:
+ ```bash
+ cpanm --installdeps .
+ perl Makefile.PL
+ make
+ make test
+ make install
+ ```
 
-	perl Makefile.PL
-	make
-	make test
-	make install
-	
 # Examples
 ## Client
   ```bash
-  $ cif -T 1234 -R 'https://localhost/api' -q example.com
+  cif -T 1234 -R 'https://localhost/api' -q example.com
   ```
   
 ## API

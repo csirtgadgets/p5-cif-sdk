@@ -6,7 +6,7 @@ use warnings FATAL => 'all';
 use Mouse;
 use HTTP::Tiny;
 use CIF::SDK qw/init_logging $Logger/;
-use JSON qw(encode_json decode_json);
+use JSON::XS qw(encode_json decode_json);
 use Time::HiRes qw(tv_interval gettimeofday);
 
 =head1 NAME
@@ -229,7 +229,7 @@ sub ping {
     my $resp = $self->get_handle()->get($uri);
     
     $Logger->debug('decoding response: '.$resp->{'status'});
-    return $resp->{'reason'} unless($resp->{'status'}) eq '200';
+    return 'request failed('.$resp->{'status'}.'): '.$resp->{'reason'}.': '.$resp->{'content'} unless($resp->{'status'} eq '200');
     my $t1 = tv_interval($t0,[gettimeofday()]);
     
     $Logger->debug('sucesss...');

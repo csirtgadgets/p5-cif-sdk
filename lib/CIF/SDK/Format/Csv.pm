@@ -2,7 +2,6 @@ package CIF::SDK::Format::Csv;
 
 use strict;
 use warnings;
-use namespace::autoclean;
 
 use Mouse;
 

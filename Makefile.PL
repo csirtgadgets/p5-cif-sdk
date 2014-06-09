@@ -6,7 +6,7 @@ all_from        'lib/CIF/SDK.pm';
 license         'LGPL_3_0';
 install_script  'bin/cif';
 
-requires 'Mouse'                => '2.2.0';
+requires 'Mouse'                => '2.1.0';
 requires 'JSON::XS'             => 0;
 requires 'Text::Table'          => 0;
 requires 'Snort::Rule'          => 1.07;

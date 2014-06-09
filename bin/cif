@@ -5,6 +5,7 @@ BEGIN {
     use local::lib "$FindBin::Bin/..";
 }
 
+use feature 'say';
 use strict;
 use warnings FATAL => 'all';
 
@@ -172,11 +173,16 @@ if($query){
     $SIG{'INT'} = sub { $d = 1; };
     my ($x,$y) = (0, $ping_ttl);
     while(!$d){
-        $ret = $cli->ping();
-        $Logger->info('roundtrip: '.$ret.' ms');
+        ($err,$ret) = $cli->ping();
+        if($ret){
+        say 'roundtrip: '.$ret.' ms';
         select(undef,undef,undef,1);
         $x++ if($y); # increase if we're not going infinately
         $d = 1 if($x && ($x == $y)); # done if we reach ttl
+        } else {
+            $Logger->fatal($err);
+            $d = 1;
+        }
     }
 }
 $Logger->info('done...');
