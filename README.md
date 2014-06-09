@@ -9,8 +9,8 @@ The CIF Software Development Kit (SDK) for Perl contains library code and exampl
  sudo apt-get install git build-essential cpanminus libmodule-install-perl
  git clone https://github.com/csirtgadgets/p5-cif-sdk.git -b master
  cd p5-cif-sdk
- cpanm --installdeps .
  perl Makefile.PL
+ cpanm --installdeps .
  make
  make test
  make install
