@@ -18,7 +18,7 @@ use Carp;
 use Data::Dumper;
 
 use constant {
-    REMOTE_DEFAULT  => 'https://localhost:443/api',
+    REMOTE_DEFAULT  => 'https://localhost:443/v2',
     TIMEOUT_DEFAULT => 300,
     LIMIT_DEFAULT   => 500,
     FORMAT_DEFAULT  => 'table',

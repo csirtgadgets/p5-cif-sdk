@@ -44,19 +44,20 @@ the SDK is a thin development kit for developing CIF applications
 =cut
 
 use constant {
-    REMOTE_DEFAULT    => 'https://localhost/api',
     HEADERS_DEFAULT => {
         'Accept'    => 'application/json',
     },
     AGENT_DEFAULT   => 'cif-sdk-perl/'.$CIF::SDK::VERSION,
     TIMEOUT_DEFAULT => 300,
+    API_VERSION_DEFAULT	=> 'v2',
+    REMOTE_DEFAULT    => 'https://localhost',
 };
 
 has 'remote' => (
     is      => 'ro',
     isa     => 'Str',
     reader  => 'get_remote',
-    default => REMOTE_DEFAULT(),
+    default => REMOTE_DEFAULT().'/'.API_VERSION_DEFAULT(),
 );
 
 has 'token' => (
@@ -131,6 +132,8 @@ sub _build_handle {
     );   
 }
 
+
+
 =head1 Object Methods
 
 =head2 new
@@ -139,7 +142,7 @@ sub _build_handle {
 
 =over
 
-  ($err,$ret) = $client->search({ 
+  $ret = $client->search({ 
       query         => 'example.com', 
       confidence    => 25, 
       limit         => 500
@@ -149,30 +152,52 @@ sub _build_handle {
 
 =cut
 
+sub _make_request {
+	my $self 	= shift;
+	my $uri	 	= shift;
+	my $params 	= shift || {};
+	
+	$uri = $self->get_remote().'/'.$uri;
+	
+	my $token = $params->{'token'} || $self->get_token();
+	
+	$uri = $uri.'?token='.$token;
+
+	foreach my $p (keys %$params){
+		next unless($params->{$p});
+		$uri .= '&'.$p.'='.$params->{$p};
+	}
+	
+	$Logger->debug('uri created: '.$uri);
+    $Logger->debug('making request...');
+    
+    my $resp = $self->get_handle()->get($uri,$params);
+    return 'request failed('.$resp->{'status'}.'): '.$resp->{'reason'}.': '.$resp->{'content'} unless($resp->{'status'} eq '200');
+    
+    $Logger->debug('success, decoding...');
+    return undef, decode_json($resp->{'content'});
+}
+
 sub search {
     my $self = shift;
     my $args = shift;
     
-    my $uri = $self->get_remote().'/'.$args->{'query'}.'?token='.$self->get_token();
-    $uri .= '&confidence='.$args->{'confidence'} if($args->{'confidence'});
-    $uri .= '&limit='.$args->{'limit'} if($args->{'limit'});
-    $uri .= '&group='.$args->{'group'} if($args->{'group'});
+    my $params = {
+    	q 			=> $args->{'query'},
+    	limit		=> $args->{'limit'},
+    	confidence	=> $args->{'confidence'},
+    	token		=> $args->{'token'} || $self->get_token(),
+    	group		=> $args->{'group'},
+    };
     
-    $Logger->debug('uri created: '.$uri);
-    $Logger->debug('making request...');
-    my $resp = $self->get_handle()->get($uri);
-    return 'request failed('.$resp->{'status'}.'): '.$resp->{'reason'}.': '.$resp->{'content'} unless($resp->{'status'} eq '200');
-    
-    $Logger->debug('success, decoding...');
-    return (undef,decode_json($resp->{'content'}));
-    
+    return $self->_make_request('observables',$params);
 }
 
 =head2 submit
 
 =over
 
-  ($err,$ret) = $client->submit({ 
+  $ret = $client->submit({ 
       observable    => 'example.com', 
       tlp           => 'green', 
       tags          => ['zeus', 'botnet'], 
@@ -192,7 +217,7 @@ sub submit {
     $Logger->debug('encoding args...');
     $args = encode_json($args);
     
-    my $uri = $self->get_remote().'/?token='.$self->get_token();
+    my $uri = $self->get_remote().'/observables?token='.$self->get_token();
     
     $Logger->debug('uri generated: '.$uri);
     $Logger->debug('making request...');
@@ -211,7 +236,7 @@ sub submit {
 
 =over
 
-  ($err,$ret) = $client->ping();
+  $ret = $client->ping();
 
 =back
 
@@ -220,20 +245,13 @@ sub submit {
 sub ping {
     my $self = shift;
     $Logger->debug('generating ping...');
-    
+
     my $t0 = [gettimeofday()];
     
-    my $uri = $self->get_remote.'/_ping?token='.$self->get_token();
-    $Logger->debug('uri generated: '.$uri);
-    $Logger->debug('pinging...');
-    my $resp = $self->get_handle()->get($uri);
-    
-    $Logger->debug('decoding response: '.$resp->{'status'});
-    return 'request failed('.$resp->{'status'}.'): '.$resp->{'reason'}.': '.$resp->{'content'} unless($resp->{'status'} eq '200');
-    my $t1 = tv_interval($t0,[gettimeofday()]);
+    my $ret = $self->_make_request('ping');
     
     $Logger->debug('sucesss...');
-    return (undef,$t1);
+    return undef, tv_interval($t0,[gettimeofday()]);
 }
 
 1;
