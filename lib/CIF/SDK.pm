@@ -63,7 +63,7 @@ require Exporter;
 our @ISA = qw(Exporter);
 
 our %EXPORT_TAGS = ( 'all' => [ qw(
-    init_logging
+    init_logging observable_type
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -101,6 +101,26 @@ sub init_logging {
         $Logger->get_logger()->add_appender($appender);
     }
     $Logger = $Logger->get_logger();
+}
+
+# push these out to make this code simpler to read
+# we still export the symbols though
+use CIF::SDK::Plugin::Address qw(:all);
+use CIF::SDK::Plugin::Hash qw(:all);
+#use CIF::SDK::Plugin::Binary qw(:all);
+#use CIF::SDK::Plugin::DateTime qw(:all);
+
+sub observable_type {
+    my $arg = shift || return;
+    
+    return 'url'    if(is_url($arg));
+    return 'ipv4'   if(is_ipv4($arg));
+    return 'ipv6'   if(is_ipv6($arg));
+    return 'fqdn'   if(is_fqdn($arg));
+    return 'email'  if(is_email($arg));
+    return 'hash'   if(is_hash($arg));
+    #return 'binary' if(is_binary($arg));
+    return 0;
 }
 
 =head1 BUGS AND SUPPORT

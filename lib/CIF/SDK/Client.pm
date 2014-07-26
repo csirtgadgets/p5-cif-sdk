@@ -193,6 +193,18 @@ sub search {
     return $self->_make_request('observables',$params);
 }
 
+sub search_id {
+	my $self 	= shift;
+	my $args	= shift;
+	
+	my $params = {
+		id		=> $args->{'id'},
+		token	=> $args->{'token'} || $self->get_token(),
+	};
+	
+	return $self->_make_request('observables',$params);
+}
+
 =head2 submit
 
 =over
@@ -221,7 +233,7 @@ sub submit {
     
     $Logger->debug('uri generated: '.$uri);
     $Logger->debug('making request...');
-    my $resp = $self->get_handle->post($uri,{ content => $args });
+    my $resp = $self->get_handle->put($uri,{ content => $args });
     
     $Logger->debug('decoding response..');
     my $content = decode_json($resp->{'content'});
