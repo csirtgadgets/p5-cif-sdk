@@ -35,7 +35,7 @@ We highly recomend using Ubuntu 14.04 LTS.
 # Examples
 ## Client
   ```bash
-  cif -T 1234 -R 'https://localhost/api' -q example.com
+  cif -T 1234 -R 'https://localhost/v2' -q example.com
   ```
   
 ## API
