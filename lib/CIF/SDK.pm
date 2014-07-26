@@ -30,7 +30,7 @@ the SDK is a thin development kit for developing CIF applications
 
     my $cli = CIF::SDK::Client->new({
         token       => '1234',
-        remote      => 'https://localhost/api',
+        remote      => 'https://localhost/v2',
         timeout     => 10,
         verify_ssl  => 0,
     });
