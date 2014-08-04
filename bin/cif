@@ -9,11 +9,10 @@ use feature 'say';
 use strict;
 use warnings FATAL => 'all';
 
-use CIF::SDK qw/init_logging $Logger/;
+use CIF::SDK qw/init_logging $Logger parse_config/;
 use CIF::SDK::Client;
 use CIF::SDK::FormatFactory;
 use Getopt::Long;
-use Config::Simple;
 use Carp;
 use Data::Dumper;
 
@@ -22,27 +21,25 @@ use constant {
     TIMEOUT_DEFAULT => 300,
     LIMIT_DEFAULT   => 500,
     FORMAT_DEFAULT  => 'table',
-    CONFIG_DEFAULT  => $ENV{'HOME'}.'/.cif',
+    CONFIG_DEFAULT  => $ENV{'HOME'}.'/.cif.yml',
 };
 
 my $help;
 my $remote          = REMOTE_DEFAULT();
 my $no_verify_ssl   = 0;
 my $timeout         = TIMEOUT_DEFAULT();
-my $query;
-my $group;
 my $token;
-my $limit           = LIMIT_DEFAULT();
-my $confidence      = 0;
 my $format          = FORMAT_DEFAULT();
 my $ping            = 0;
-my $tags;
 my $nolog           = 0;
+my $limit;
 my $submit		    = 0;
 my $ping_ttl        = 4;
 my $debug           = 0;
 my $verbosity       = 0;
 my $config          = CONFIG_DEFAULT();
+
+my $filters;
 
 Getopt::Long::Configure("bundling");
 GetOptions(
@@ -52,13 +49,18 @@ GetOptions(
     'verbosity|v+'      => \$verbosity,
     
     'remote|R=s'        => \$remote,
-    'query|q=s'         => \$query,
+    'query|q=s'         => \$filters->{'query'},
     'submit|s'          => \$submit,
     'token|T=s'         => \$token,
-    'group|g=s'         => \$group,
+    'groups|g=s'        => \$filters->{'groups'},
     'limit|l=i'         => \$limit,
-    'confidence|c=i'    => \$confidence,
-    'tags|t=s'          => \$tags,
+    'confidence|c=i'    => \$filters->{'confidence'},
+    'tags|t=s'          => \$filters->{'tags'},
+    'cc=s'              => \$filters->{'cc'},
+    'app=s'             => \$filters->{'app'},
+    'asns=s'            => \$filters->{'asns'},
+    'otypes=s'          => \$filters->{'otypes'},
+    'providers=s'       => \$filters->{'providers'},
     
     'no-verify-ssl'     => \$no_verify_ssl,
     
@@ -69,11 +71,10 @@ GetOptions(
 ) or die(usage());
 
 die(usage()) if($help);
-die(usage()) unless($query || $ping || $submit);
+die(usage()) unless($filters || $ping || $submit);
 
 if(-e $config){
-    $config = Config::Simple->new($config) || croak('config error...');
-    $config = $config->get_block('client') || croak('no client section in config');
+	$config = parse_config($config);
     
     $remote         = $config->{'remote'} if($config->{'remote'} && $remote eq REMOTE_DEFAULT());
     $token          = $config->{'token'} if($config->{'token'} && !$token);
@@ -116,19 +117,27 @@ Usage: $0 [OPTION]
 
 Options:
 
-    -R, --remote=STRING         specify the remote, default: $remote
-    -T, --token=STRING          specify an access token
     -q, --query=STRING          specify a search
     -f, --format=FORMAT         specify the output format, default: $format
-    -h, --help                  this message       
+    -l, --limit=INT             specify a return limit (default set at router)
+    -s, --submit                submit data via STDIN (json keypairs)
+    
+    -h, --help                  this message     
+
+Filters:
+    
+    -c, --confidence=INT        by confidence (greater or eaqual to)
+    -g, --groups STRING         by groups (everyone,group1,group2, ...)
+    --tags STRING,STRING        by tags (scanner,hijacked,botnet, ...)
+    --cc=STRING,STRING          by country codes (RU,US, ...)
+    --asns=INT,INT              by asns (1234,2445, ...)
+    --otypes=STRING,STRING      by observable type (ipv4,fqdn,url, ...)
+    --providers=STRING,STRING   by provider (spamhaus.org,dragonresearchgroup.org, ...)
     
 Advanced Options:
 
-    -g, --group=STRING          specify a default group to use
-    -l, --limit=INT             specify a return limit, default: $limit
-    -c, --confidence=INT        specify a default confidence, default: $confidence
-    -t, --tags=STRING,STRING    specify tags to filter against
-    -s, --submit                submit data via STDIN (json keypairs)
+    -T, --token=STRING          specify an access token
+    -R, --remote=STRING         specify the remote, default: $remote
     --no-verify-ssl             turn off SSL/TLS verification
 
 Ping Options:
@@ -136,8 +145,9 @@ Ping Options:
                                 (0 infinate, halt with SIGINT or CTRL+C)
  Examples:
     $0 -q example.com -v
-    $0 -t botnet,zeus -c 85
-    $0 -q example.com -t botnet,zeus -c 85 -l 50
+    $0 --tags botnet,zeus -c 85
+    $0 --app vnc,ssh --asns 1234 --cc RU,US
+    $0 -q example.com --tags botnet,zeus -c 85 -l 50
 
 EOF
 }
@@ -152,13 +162,9 @@ my $cli = CIF::SDK::Client->new({
 });
 
 my ($err,$ret);
-if($query){
+if($filters){
     $Logger->info('running search...');
-    ($err,$ret) = $cli->search({
-        query       => $query,
-        confidence  => $confidence,
-        limit       => $limit,
-    });
+    ($err,$ret) = $cli->search($filters);
     croak($err) if($err);
     $Logger->info('search returned, formatting..');
     my $formatter = CIF::SDK::FormatFactory->new_plugin({ format => $format });

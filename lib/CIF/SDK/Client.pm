@@ -181,16 +181,8 @@ sub _make_request {
 sub search {
     my $self = shift;
     my $args = shift;
-    
-    my $params = {
-    	q 			=> $args->{'query'},
-    	limit		=> $args->{'limit'},
-    	confidence	=> $args->{'confidence'},
-    	token		=> $args->{'token'} || $self->get_token(),
-    	group		=> $args->{'group'},
-    };
-    
-    return $self->_make_request('observables',$params);
+
+    return $self->_make_request('observables',$args);
 }
 
 sub search_id {
