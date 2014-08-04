@@ -6,7 +6,7 @@ all_from        'lib/CIF/SDK.pm';
 license         'LGPL_3_0';
 install_script  'bin/cif';
 
-requires 'Mouse'                    => '2.1.0';
+requires 'Mouse'                    => '2.2.0';
 requires 'JSON::XS'                 => 0;
 requires 'Text::Table'              => 0;
 requires 'Snort::Rule'              => 1.07;
@@ -20,5 +20,6 @@ requires 'Config::Simple'           => 4.58;
 requires 'Module::PluginFinder'     => 0.04;
 requires 'Net::SSLeay'              => '1.49';
 requires 'Mail::RFC822::Address'    => 0;
+requires 'YAML::Tiny'               => '1.63';
 
 WriteAll;
