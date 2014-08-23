@@ -38,6 +38,7 @@ my $ping_ttl        = 4;
 my $debug           = 0;
 my $verbosity       = 0;
 my $config          = CONFIG_DEFAULT();
+my $feed;
 
 my $filters;
 
@@ -50,6 +51,7 @@ GetOptions(
     
     'remote|R=s'        => \$remote,
     'query|q=s'         => \$filters->{'query'},
+    'id=s'              => \$filters->{'id'},
     'submit|s'          => \$submit,
     'token|T=s'         => \$token,
     'groups|g=s'        => \$filters->{'groups'},
@@ -61,6 +63,7 @@ GetOptions(
     'asns=s'            => \$filters->{'asns'},
     'otypes=s'          => \$filters->{'otypes'},
     'providers=s'       => \$filters->{'providers'},
+    'feed'              => \$feed,
     
     'no-verify-ssl'     => \$no_verify_ssl,
     
@@ -118,6 +121,7 @@ Usage: $0 [OPTION]
 Options:
 
     -q, --query=STRING          specify a search
+    --id STRING                 specify an id to retrieve
     -f, --format=FORMAT         specify the output format, default: $format
     -l, --limit=INT             specify a return limit (default set at router)
     -s, --submit                submit data via STDIN (json keypairs)
@@ -164,7 +168,12 @@ my $cli = CIF::SDK::Client->new({
 my ($err,$ret);
 if($filters){
     $Logger->info('running search...');
-    ($err,$ret) = $cli->search($filters);
+    if($feed){
+        ($err,$ret) = $cli->search_feed($filters);
+    } else {
+        ($err,$ret) = $cli->search($filters);
+    }
+    
     croak($err) if($err);
     $Logger->info('search returned, formatting..');
     my $formatter = CIF::SDK::FormatFactory->new_plugin({ format => $format });

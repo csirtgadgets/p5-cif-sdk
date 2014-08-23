@@ -178,6 +178,13 @@ sub _make_request {
     return undef, decode_json($resp->{'content'});
 }
 
+sub search_feed {
+    my $self = shift;
+    my $args = shift;
+    
+    return $self->_make_request('feeds',$args);
+}
+
 sub search {
     my $self = shift;
     my $args = shift;
@@ -212,20 +219,38 @@ sub search_id {
 
 =cut
 
+sub submit_feed {
+	my $self = shift;
+	my $args = shift;
+	
+	return $self->_submit('feeds/new',$args);
+};
+
 sub submit {
+	my $self = shift;
+	my $args = shift;
+	
+    return $self->_submit('observables',$args);
+}
+
+sub _submit {
     my $self = shift;
+    my $uri = shift;
     my $args = shift;
     
     $args = [$args] if(ref($args) eq 'HASH');
     
     $Logger->debug('encoding args...');
-    $args = encode_json($args);
     
-    my $uri = $self->get_remote().'/observables?token='.$self->get_token();
+    $args = encode_json($args);
+
+    $uri = $self->get_remote().'/'.$uri.'/?token='.$self->get_token();
     
     $Logger->debug('uri generated: '.$uri);
     $Logger->debug('making request...');
     my $resp = $self->get_handle->put($uri,{ content => $args });
+    
+    warn ::Dumper($resp);
     
     $Logger->debug('decoding response..');
     my $content = decode_json($resp->{'content'});
@@ -234,7 +259,7 @@ sub submit {
     
     $Logger->debug('success...');
     return (undef, $content, $resp);
-}
+}	
 
 =head2 ping
 
