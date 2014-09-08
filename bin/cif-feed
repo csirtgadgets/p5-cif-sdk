@@ -1,0 +1,190 @@
+#!perl
+
+BEGIN {
+    use FindBin;
+    use local::lib "$FindBin::Bin/..";
+}
+
+use feature 'say';
+use strict;
+use warnings FATAL => 'all';
+
+use CIF::SDK qw/init_logging $Logger parse_config/;
+use CIF::SDK::Client;
+use CIF::SDK::FeedFactory;
+use Getopt::Long;
+use Carp;
+use DateTime;
+use Data::Dumper;
+
+use constant {
+    REMOTE_DEFAULT  => 'https://localhost',
+    TIMEOUT_DEFAULT => 300,
+    LIMIT_DEFAULT   => 500,
+    FORMAT_DEFAULT  => 'table',
+    CONFIG_DEFAULT  => $ENV{'HOME'}.'/.cif',
+};
+
+my $help;
+my $remote          = REMOTE_DEFAULT();
+my $no_verify_ssl   = 0;
+my $timeout         = TIMEOUT_DEFAULT();
+my $token;
+my $format          = FORMAT_DEFAULT();
+my $limit;
+my $debug           = 0;
+my $verbosity       = 0;
+my $config          = CONFIG_DEFAULT();
+
+my $filters = {
+	confidence => 85,
+	groups     => 'everyone',
+	limit      => 50000, # arbitrary, need to think about resource limits on things like
+	                     # firewalls and routers
+	otype      => 'ipv4',
+	tags       => 'scanner',
+	tlp        => 'green',
+};
+
+Getopt::Long::Configure("bundling");
+GetOptions(
+    'help|h'            => \$help, 
+    'config|C=s'        => \$config,
+    'debug|d'           => \$debug,
+    'verbosity|v+'      => \$verbosity,
+    
+    'remote|R=s'        => \$remote,
+    'token|T=s'         => \$token,
+    'groups|g=s'        => \$filters->{'group'},
+    'limit|l=i'         => \$filters->{'limit'},
+    'confidence|c=s'    => \$filters->{'confidence'},
+    'tags|t=s'          => \$filters->{'tags'},
+    'cc=s'              => \$filters->{'cc'},
+    'otype=s'           => \$filters->{'otype'},
+    'providers=s'       => \$filters->{'provider'},
+    'application=s'     => \$filters->{'application'},
+    
+    'no-verify-ssl'     => \$no_verify_ssl,
+) or die(usage());
+
+die(usage()) if($help);
+die(usage()) unless($filters);
+
+if(-e $config){
+    $config = parse_config($config);
+    
+    $remote         = $config->{'remote'} if($config->{'remote'} && $remote eq REMOTE_DEFAULT());
+    $token          = $config->{'token'} if($config->{'token'} && !$token);
+    $no_verify_ssl  = $config->{'no_verify_ssl'} if($config->{'no_verify_ssl'} && !$no_verify_ssl); # double negative
+    $limit          = $config->{'limit'} if($config->{'limit'} && $limit != LIMIT_DEFAULT());
+    $timeout        = $config->{'timeout'} if($config->{'timeout'} && $timeout != TIMEOUT_DEFAULT());
+}
+
+my $loglevel = ($debug) ? 'DEBUG' : 'WARN';
+
+init_logging(
+    { 
+        level       => $loglevel,
+        category    => 'cif',
+    },
+);
+
+if($verbosity){
+    unless($debug){ # we're already at TRACE
+        $Logger->more_logging($verbosity);
+    }
+}
+
+die(usage()."\nmissing Token (--token|-T)\n") unless($token);
+
+sub usage {
+    return <<EOF;
+
+Usage: $0 [OPTION]
+
+Options:
+
+    -l, --limit=INT             specify a return limit (default set at router)
+    
+    -h, --help                  this message     
+
+Filters:
+    
+    -c, --confidence=INT        by confidence (greater or eaqual to)
+    -g, --groups STRING         by groups (everyone,group1,group2, ...)
+    --tags STRING,STRING        by tags (scanner,hijacked,botnet, ...)
+    --cc=STRING,STRING          by country codes (RU,US, ...)
+    --otype=STRING,STRING      by observable type (ipv4,fqdn,url, ...)
+    --provider=STRING,STRING   by provider (spamhaus.org,dragonresearchgroup.org, ...)
+    
+Advanced Options:
+
+    -T, --token=STRING          specify an access token
+    -R, --remote=STRING         specify the remote, default: $remote
+    --no-verify-ssl             turn off SSL/TLS verification
+
+ Examples:
+    $0 --tags malware --otype fqdn -c 65
+    $0 --tags botnet,malware --otype ipv4 -c 85
+
+EOF
+}
+
+my $plugin = CIF::SDK::FeedFactory->new_plugin({ otype => $filters->{'otype'} }) || croak('unknown otype');
+
+
+my @confidence_values = split(/,/,$filters->{'confidence'});
+
+my $timestamp = DateTime->from_epoch(epoch => time());
+$timestamp = $timestamp->ymd.'T'.$timestamp->hms().'Z';
+
+$Logger->info('starting up client...');
+my $cli = CIF::SDK::Client->new({
+    token       => $token,
+    remote      => $remote,
+    timeout     => $timeout,
+    verify_ssl  => ($no_verify_ssl) ? 0 : 1,
+});
+
+$Logger->debug('pulling '.$filters->{'otype'}.' whitelist');
+
+my ($err,$ret) = $cli->search({
+	otype      => $filters->{'otype'},
+	tags       => 'whitelist',
+	confidence => 25, # TODO -- arbitrary
+	limit      => $filters->{'limit'},
+});
+
+my $whitelist = $ret;
+
+$Logger->debug('got whitelist... grabbing requested dataset...');
+
+foreach my $confidence (@confidence_values){
+    $filters->{'confidence'} = $confidence;
+    ($err,$ret) = $cli->search($filters);
+
+    $Logger->debug('got data-set.. generating feed');
+    
+    my $data = $plugin->process({
+    	data       => $ret,
+    	whitelist  => $whitelist,
+    });
+    	
+    $Logger->debug('pushing results back to router');
+    
+    ($err,$ret) = $cli->submit_feed({
+    	Observables	   => $data,
+        tags    	   => $filters->{'tags'},
+    	otype          => $filters->{'otype'},
+    	reporttime 	   => $timestamp,
+    	tlp            => $filters->{'tlp'},
+    	groups         => $filters->{'group'},
+    	confidence     => $confidence,
+    	cc             => $filters->{'cc'},
+    	providers      => $filters->{'provider'},
+    });
+}
+	
+
+
+$Logger->info('done...');
