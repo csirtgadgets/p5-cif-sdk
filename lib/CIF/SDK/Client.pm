@@ -8,6 +8,7 @@ use HTTP::Tiny;
 use CIF::SDK qw/init_logging $Logger/;
 use JSON::XS qw(encode_json decode_json);
 use Time::HiRes qw(tv_interval gettimeofday);
+use Carp;
 
 =head1 NAME
 
@@ -44,66 +45,42 @@ the SDK is a thin development kit for developing CIF applications
 =cut
 
 use constant {
-    HEADERS_DEFAULT => {
-        'Accept'    => 'application/json',
+    HEADERS => {
+        'Accept'            => 'application/json',
+        'X-CIF-Media-Type'  => 'vnd.cif.'.$CIF::SDK::API_VERSION,
     },
-    AGENT_DEFAULT   => 'cif-sdk-perl/'.$CIF::SDK::VERSION,
-    TIMEOUT_DEFAULT => 300,
-    API_VERSION_DEFAULT	=> 'v2',
-    REMOTE_DEFAULT    => 'https://localhost',
+    AGENT   => 'cif-sdk-perl/'.$CIF::SDK::VERSION,
+    TIMEOUT => 300,
+    REMOTE  => 'https://localhost',
 };
 
 has 'remote' => (
     is      => 'ro',
-    isa     => 'Str',
-    reader  => 'get_remote',
-    default => REMOTE_DEFAULT().'/'.API_VERSION_DEFAULT(),
+    default => REMOTE,
 );
 
-has 'token' => (
-    is      => 'ro',
-    isa     => 'Str',
-    reader  => 'get_token',
-);
-
-has 'proxy' => (
-    is      => 'ro',
-    isa     => 'Str',
-    reader  => 'get_proxy',
+has [qw(token proxy nolog)] => (
+    is  => 'ro'
 );
 
 has 'timeout'   => (
     is      => 'ro',
-    isa     => 'Int',
-    reader  => 'get_timeout',
-    default => TIMEOUT_DEFAULT(),
+    default => TIMEOUT,
 );
 
 has 'headers' => (
     is      => 'ro',
-    isa     => 'HashRef',
-    reader  => 'get_headers',
-    default => sub { HEADERS_DEFAULT() },
+    default => sub { HEADERS },
 );
 
 has 'verify_ssl' => (
     is      => 'ro',
-    isa     => 'Bool',
-    reader  => 'get_verify_ssl',
     default => 1,
-);
-
-has 'nolog' => (
-    is      => 'ro',
-    isa     => 'Bool',
-    reader  => 'get_nolog',
-    default => 0,
 );
 
 has 'handle' => (
     is      => 'ro',
     isa     => 'HTTP::Tiny',
-    reader  => 'get_handle',
     builder => '_build_handle',
 );
 
@@ -124,11 +101,11 @@ sub _build_handle {
     my $self = shift;
     
     return HTTP::Tiny->new(
-        agent   => AGENT_DEFAULT(),
-        default_headers => $self->get_headers(),
-        timeout         => $self->get_timeout(),
-        verify_ssl      => $self->get_verify_ssl(),
-        proxy           => $self->get_proxy(),
+        agent           => AGENT,
+        default_headers => $self->headers,
+        timeout         => $self->timeout,
+        verify_ssl      => $self->verify_ssl,
+        proxy           => $self->proxy,
     );   
 }
 
@@ -157,9 +134,9 @@ sub _make_request {
 	my $uri	 	= shift;
 	my $params 	= shift || {};
 	
-	$uri = $self->get_remote().'/'.$uri;
+	$uri = $self->remote.'/'.$uri;
 	
-	my $token = $params->{'token'} || $self->get_token();
+	my $token = $params->{'token'} || $self->token;
 	
 	$uri = $uri.'?token='.$token;
 
@@ -171,7 +148,7 @@ sub _make_request {
 	$Logger->debug('uri created: '.$uri);
     $Logger->debug('making request...');
     
-    my $resp = $self->get_handle()->get($uri,$params);
+    my $resp = $self->handle->get($uri,$params);
     return 'request failed('.$resp->{'status'}.'): '.$resp->{'reason'}.': '.$resp->{'content'} unless($resp->{'status'} eq '200');
     
     $Logger->debug('success, decoding...');
@@ -198,7 +175,7 @@ sub search_id {
 	
 	my $params = {
 		id		=> $args->{'id'},
-		token	=> $args->{'token'} || $self->get_token(),
+		token	=> $args->{'token'} || $self->token,
 	};
 	
 	return $self->_make_request('observables',$params);
@@ -223,7 +200,7 @@ sub submit_feed {
 	my $self = shift;
 	my $args = shift;
 	
-	return $self->_submit('feeds/new',$args);
+	return $self->_submit('feeds',$args);
 };
 
 sub submit {
@@ -244,18 +221,19 @@ sub _submit {
     
     $args = encode_json($args);
 
-    $uri = $self->get_remote().'/'.$uri.'/?token='.$self->get_token();
+    $uri = $self->remote.'/'.$uri.'/?token='.$self->token;
     
     $Logger->debug('uri generated: '.$uri);
     $Logger->debug('making request...');
-    my $resp = $self->get_handle->put($uri,{ content => $args });
+    my $resp = $self->handle->put($uri,{ content => $args });
     
-    warn ::Dumper($resp);
-    
+    unless($resp->{'status'} < 399){
+        $Logger->fatal('status: '.$resp->{'status'}.' -- '.$resp->{'reason'});
+        croak('submission failed: contact administrator');
+    }
     $Logger->debug('decoding response..');
+    
     my $content = decode_json($resp->{'content'});
-
-    return $content->{'message'} if($resp->{'status'} > 399);
     
     $Logger->debug('success...');
     return (undef, $content, $resp);

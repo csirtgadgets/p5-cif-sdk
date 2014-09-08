@@ -16,7 +16,6 @@ requires 'Regexp::IPv6';
 requires 'Parse::Range'             => 0;
 requires 'Log::Log4perl'            => 0;
 requires 'Time::HiRes'              => 0;
-requires 'Config::Simple'           => 4.58;
 requires 'Module::PluginFinder'     => 0.04;
 requires 'Net::SSLeay'              => '1.49';
 requires 'Mail::RFC822::Address'    => 0;

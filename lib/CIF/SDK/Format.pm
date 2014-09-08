@@ -8,9 +8,7 @@ use Mouse::Role;
 requires qw/understands process/;
 
 use constant DEFAULT_COLS   => [ 
-    'provider','tlp','group','observable','confidence',
-    'firsttime','lasttime','reporttime','altid','altid_tlp',
-    'tags' 
+    'reporttime','provider','tlp','group','confidence','tags','observable'
 ];
 
 use constant DEFAULT_SORT   => [

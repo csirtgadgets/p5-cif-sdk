@@ -6,7 +6,6 @@ use warnings FATAL => 'all';
 
 use CIF::SDK::Logger;
 
-use Config::Simple;
 use YAML::Tiny;
 
 =head1 NAME
@@ -15,7 +14,8 @@ CIF::SDK - The CIF Software Development Kit
 
 =cut
 
-our $VERSION = '0.00_01';
+our $VERSION        = '0.00_02';
+our $API_VERSION    = 2;
 
 =head1 VERSION
 
@@ -130,12 +130,7 @@ sub parse_config {
 	my $config = shift;
 	
 	return unless(-e $config);
-	if($config =~ /\.yml$/){
-        $config = YAML::Tiny->read($config)->[0];
-    } else {
-        $config = Config::Simple->new($config) || croak('config error...');
-        $config = $config->get_block('client') || croak('no client section in config');
-    }
+    $config = YAML::Tiny->read($config)->[0];
     return $config;
 }
 

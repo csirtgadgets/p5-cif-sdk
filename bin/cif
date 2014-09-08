@@ -17,19 +17,19 @@ use Carp;
 use Data::Dumper;
 
 use constant {
-    REMOTE_DEFAULT  => 'https://localhost/v2',
-    TIMEOUT_DEFAULT => 300,
-    LIMIT_DEFAULT   => 500,
-    FORMAT_DEFAULT  => 'table',
-    CONFIG_DEFAULT  => $ENV{'HOME'}.'/.cif.yml',
+    REMOTE  => 'https://localhost',
+    TIMEOU  => 300,
+    LIMIT   => 500,
+    FORMAT  => 'table',
+    CONFIG  => $ENV{'HOME'}.'/.cif',
 };
 
 my $help;
-my $remote          = REMOTE_DEFAULT();
+my $remote          = REMOTE;
 my $no_verify_ssl   = 0;
-my $timeout         = TIMEOUT_DEFAULT();
+my $timeout         = TIMEOUT;
 my $token;
-my $format          = FORMAT_DEFAULT();
+my $format          = FORMAT;
 my $ping            = 0;
 my $nolog           = 0;
 my $limit;
@@ -37,7 +37,7 @@ my $submit		    = 0;
 my $ping_ttl        = 4;
 my $debug           = 0;
 my $verbosity       = 0;
-my $config          = CONFIG_DEFAULT();
+my $config          = CONFIG;
 my $feed;
 
 my $filters;
@@ -50,19 +50,19 @@ GetOptions(
     'verbosity|v+'      => \$verbosity,
     
     'remote|R=s'        => \$remote,
-    'query|q=s'         => \$filters->{'query'},
+    'query|q=s'         => \$filters->{'observable'},
     'id=s'              => \$filters->{'id'},
     'submit|s'          => \$submit,
     'token|T=s'         => \$token,
-    'groups|g=s'        => \$filters->{'groups'},
+    'group|g=s'         => \$filters->{'group'},
     'limit|l=i'         => \$limit,
     'confidence|c=i'    => \$filters->{'confidence'},
-    'tags|t=s'          => \$filters->{'tags'},
+    'tag|t=s'           => \$filters->{'tags'},
     'cc=s'              => \$filters->{'cc'},
-    'app=s'             => \$filters->{'app'},
-    'asns=s'            => \$filters->{'asns'},
-    'otypes=s'          => \$filters->{'otypes'},
-    'providers=s'       => \$filters->{'providers'},
+    'application=s'     => \$filters->{'application'},
+    'asn=s'             => \$filters->{'asn'},
+    'otype=s'           => \$filters->{'otype'},
+    'provider=s'        => \$filters->{'provider'},
     'feed'              => \$feed,
     
     'no-verify-ssl'     => \$no_verify_ssl,
@@ -79,11 +79,11 @@ die(usage()) unless($filters || $ping || $submit);
 if(-e $config){
 	$config = parse_config($config);
     
-    $remote         = $config->{'remote'} if($config->{'remote'} && $remote eq REMOTE_DEFAULT());
+    $remote         = $config->{'remote'} if($config->{'remote'} && $remote eq REMOTE);
     $token          = $config->{'token'} if($config->{'token'} && !$token);
     $no_verify_ssl  = $config->{'no_verify_ssl'} if($config->{'no_verify_ssl'} && !$no_verify_ssl); # double negative
-    $limit          = $config->{'limit'} if($config->{'limit'} && $limit != LIMIT_DEFAULT());
-    $timeout        = $config->{'timeout'} if($config->{'timeout'} && $timeout != TIMEOUT_DEFAULT());
+    $limit          = $config->{'limit'} if($config->{'limit'} && $limit != LIMIT);
+    $timeout        = $config->{'timeout'} if($config->{'timeout'} && $timeout != TIMEOUT);
     $nolog          = $config->{'nolog'} if($config->{'nolog'});
 }
 
