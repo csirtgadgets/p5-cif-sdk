@@ -18,7 +18,7 @@ use Data::Dumper;
 
 use constant {
     REMOTE  => 'https://localhost',
-    TIMEOU  => 300,
+    TIMEOUT  => 300,
     LIMIT   => 500,
     FORMAT  => 'table',
     CONFIG  => $ENV{'HOME'}.'/.cif',
@@ -57,7 +57,7 @@ GetOptions(
     'group|g=s'         => \$filters->{'group'},
     'limit|l=i'         => \$limit,
     'confidence|c=i'    => \$filters->{'confidence'},
-    'tag|t=s'           => \$filters->{'tags'},
+    'tags|t=s'          => \$filters->{'tags'},
     'cc=s'              => \$filters->{'cc'},
     'application=s'     => \$filters->{'application'},
     'asn=s'             => \$filters->{'asn'},
@@ -77,8 +77,8 @@ die(usage()) if($help);
 die(usage()) unless($filters || $ping || $submit);
 
 if(-e $config){
-	$config = parse_config($config);
-    
+	$config = parse_config($config)->{'client'} || {};
+
     $remote         = $config->{'remote'} if($config->{'remote'} && $remote eq REMOTE);
     $token          = $config->{'token'} if($config->{'token'} && !$token);
     $no_verify_ssl  = $config->{'no_verify_ssl'} if($config->{'no_verify_ssl'} && !$no_verify_ssl); # double negative
@@ -134,9 +134,9 @@ Filters:
     -g, --groups STRING         by groups (everyone,group1,group2, ...)
     --tags STRING,STRING        by tags (scanner,hijacked,botnet, ...)
     --cc=STRING,STRING          by country codes (RU,US, ...)
-    --asns=INT,INT              by asns (1234,2445, ...)
-    --otypes=STRING,STRING      by observable type (ipv4,fqdn,url, ...)
-    --providers=STRING,STRING   by provider (spamhaus.org,dragonresearchgroup.org, ...)
+    --asn=INT,INT              by asns (1234,2445, ...)
+    --otype=STRING,STRING      by observable type (ipv4,fqdn,url, ...)
+    --provider=STRING,STRING   by provider (spamhaus.org,dragonresearchgroup.org, ...)
     
 Advanced Options:
 
