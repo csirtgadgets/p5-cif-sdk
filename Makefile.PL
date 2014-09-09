@@ -6,6 +6,7 @@ all_from        'lib/CIF/SDK.pm';
 license         'LGPL_3_0';
 install_script  'bin/cif';
 
+requires 'Net::DNS::Match'          => '0.05';
 requires 'Mouse'                    => '2.3.0';
 requires 'JSON::XS'                 => 0;
 requires 'Text::Table'              => 0;
