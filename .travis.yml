@@ -1,6 +1,6 @@
 language: perl
 perl:
-   - 5.19
+   - 5.20
    - 5.18
    - 5.16
 notifications:
@@ -11,4 +11,3 @@ branches:
     only:
         - master
         - staging
-        - /^release-.*$/

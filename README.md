@@ -8,34 +8,29 @@ We highly recomend using Ubuntu 14.04 LTS.
 ## Ubuntu 14
  ```
  sudo apt-get install -y git build-essential cpanminus libmodule-install-perl
- git clone https://github.com/csirtgadgets/p5-cif-sdk.git -b master
- cd p5-cif-sdk
- perl Makefile.PL
- cpanm http://cpan.metacpan.org/authors/id/S/SH/SHERZODR/Config-Simple-4.59.tar.gz
- cpanm --installdeps . --mirror http://cpan.metacpan.org
- make
- make test
- make install
+ sudo cpanm git://github.com/csirtgadgets/p5-cif-sdk.git
  ```
 
 ## Ubuntu 12
  ```
  sudo apt-get install -y git build-essential cpanminus libmodule-install-perl
  cpanm --self-upgrade --mirror http://cpan.metacpan.org
- git clone https://github.com/csirtgadgets/p5-cif-sdk.git -b master
- cd p5-cif-sdk
- cpanm --mirror http://cpan.metacpan.org ExtUtils::MakeMaker http://cpan.metacpan.org/authors/id/S/SH/SHERZODR/Config-Simple-4.59.tar.gz
- perl Makefile.PL
- cpanm --installdeps --mirror http://cpan.metacpan.org .
- make
- make test
- make install
+ sudo cpanm git://github.com/csirtgadgets/p5-cif-sdk.git
  ```
 
 # Examples
 ## Client
+### Config
+  ```yaml
+  client:
+    remote: https://localhost
+    token: 1234
+  ```
+### Running
   ```bash
-  cif -T 1234 -R 'https://localhost/v2' -q example.com
+  $ cif --token 1234 --remote 'https://localhost' -q example.com
+  $ cif-feed --confidence 65 --tags malware,botnet --otype fqdn
+  $ cif-feed --confidence 85 --tags hijacked --otype ipv4
   ```
   
 ## API
