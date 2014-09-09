@@ -13,11 +13,11 @@ diag( "Testing CIF::SDK $CIF::SDK::VERSION, Perl $], $^X" );
 
 my $context = CIF::SDK::Client->new({
     token       => '1234',
-    remote      => 'https://localhost:8443/api',
+    remote      => 'https://localhost',
     timeout     => 10,
     verify_ssl  => 0,
 });
 
-ok($context->get_remote() =~ /^https/, 'testing remote...');
-ok($context->get_headers()->{'Accept'} =~ /json/, 'testing headers...');
+ok($context->remote =~ /^https/, 'testing remote...');
+ok($context->headers->{'Accept'} =~ /json/, 'testing headers...');
 done_testing();
