@@ -72,7 +72,8 @@ die(usage()) unless($filters);
 
 if(-e $config){
     $config = parse_config($config);
-    
+    $config = $config->{'client'} || croak('missing client section');
+
     $remote         = $config->{'remote'} if($config->{'remote'} && $remote eq REMOTE_DEFAULT());
     $token          = $config->{'token'} if($config->{'token'} && !$token);
     $no_verify_ssl  = $config->{'no_verify_ssl'} if($config->{'no_verify_ssl'} && !$no_verify_ssl); # double negative
