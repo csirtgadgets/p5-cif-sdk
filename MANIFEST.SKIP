@@ -1,3 +1,7 @@
+Makefile.PL
+Build
+.includepath
+_build
 Makefile$
 CIF-SDK-*
 dist.ini

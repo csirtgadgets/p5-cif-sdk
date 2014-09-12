@@ -1,5 +1,10 @@
+Build
+META.*
+*.old
+Makefile.PL
+*.swp
+_build
 .includepath
-META.yml
 .old
 .orig
 .build/
