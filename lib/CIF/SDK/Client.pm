@@ -46,8 +46,7 @@ the SDK is a thin development kit for developing CIF applications
 
 use constant {
     HEADERS => {
-        'Accept'            => 'application/json',
-        'X-CIF-Media-Type'  => 'vnd.cif.'.$CIF::SDK::API_VERSION,
+        'Accept'  => 'vnd.cif.v'.$CIF::SDK::API_VERSION.'+json',
     },
     AGENT   => 'cif-sdk-perl/'.$CIF::SDK::VERSION,
     TIMEOUT => 300,
