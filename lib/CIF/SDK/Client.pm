@@ -228,6 +228,7 @@ sub _submit {
     
     unless($resp->{'status'} < 399){
         $Logger->fatal('status: '.$resp->{'status'}.' -- '.$resp->{'reason'});
+        $Logger->fatal($resp->{'content'});
         croak('submission failed: contact administrator');
     }
     $Logger->debug('decoding response..');
