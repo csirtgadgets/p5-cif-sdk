@@ -1,5 +1,11 @@
 Revision history for CIF-SDK
 
-0.01_01 - 2014-06
+0.00_02 - 2014-09-14
+    - added bin/cif-feed for feed generation
+    - cleaed up headers for use with new api
+    - moved to Module::Build from Module::Install
+    - converted to use YAML style configs
+
+0.00_01 - 2014-06
         First version, released on an unsuspecting world.
 
