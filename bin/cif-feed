@@ -158,13 +158,17 @@ my ($err,$ret) = $cli->search({
 
 my $whitelist = $ret;
 
-$Logger->debug('got whitelist... grabbing requested dataset...');
+my $num_whitelist = ($#{$whitelist} + 1);
+
+$Logger->debug('got whitelist ['.$num_whitelist.']... grabbing requested dataset...');
 
 foreach my $confidence (@confidence_values){
     $filters->{'confidence'} = $confidence;
+    $ret = -1;
     ($err,$ret) = $cli->search($filters);
 
-    $Logger->debug('got data-set.. generating feed');
+    my $num_ret = ($#{$ret} + 1);
+    $Logger->debug('got data-set: '.$num_ret.' generating feed');
     
     my $data = $plugin->process({
     	data       => $ret,
