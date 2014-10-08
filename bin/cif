@@ -63,6 +63,7 @@ GetOptions(
     'asn=s'             => \$filters->{'asn'},
     'otype=s'           => \$filters->{'otype'},
     'provider=s'        => \$filters->{'provider'},
+    'rdata=s'           => \$filters->{'rdata'},
     'feed'              => \$feed,
     
     'no-verify-ssl'     => \$no_verify_ssl,
