@@ -82,6 +82,11 @@ has 'nowait' => (
     default => 0,
 );
 
+has 'keep_alive' => (
+    is      => 'ro',
+    default => 1,
+);
+
 has 'handle' => (
     is      => 'ro',
     isa     => 'HTTP::Tiny',
@@ -110,6 +115,7 @@ sub _build_handle {
         timeout         => $self->timeout,
         verify_ssl      => $self->verify_ssl,
         proxy           => $self->proxy,
+        keep_alive      => ($self->nowait) ? 0 : 1, # if we go into nowait mode, the HTTP api might start sending us RSTs
     );   
 }
 
