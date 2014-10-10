@@ -77,6 +77,11 @@ has 'verify_ssl' => (
     default => 1,
 );
 
+has 'nowait' => (
+    is      => 'ro',
+    default => 0,
+);
+
 has 'handle' => (
     is      => 'ro',
     isa     => 'HTTP::Tiny',
@@ -138,6 +143,10 @@ sub _make_request {
 	my $token = $params->{'token'} || $self->token;
 	
 	$uri = $uri.'?token='.$token;
+
+    if($self->nowait){
+	    $params->{'nowait'} = 1;
+	}
 
 	foreach my $p (keys %$params){
 		next unless($params->{$p});
