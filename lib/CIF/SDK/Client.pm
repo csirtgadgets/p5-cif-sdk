@@ -144,10 +144,6 @@ sub _make_request {
 	
 	$uri = $uri.'?token='.$token;
 
-    if($self->nowait){
-	    $params->{'nowait'} = 1;
-	}
-
 	foreach my $p (keys %$params){
 		next unless($params->{$p});
 		$uri .= '&'.$p.'='.$params->{$p};
@@ -230,6 +226,10 @@ sub _submit {
     $args = encode_json($args);
 
     $uri = $self->remote.'/'.$uri.'/?token='.$self->token;
+    
+    if($self->nowait){
+        $uri .= '&nowait=1';
+    }
     
     $Logger->debug('uri generated: '.$uri);
     $Logger->debug('making request...');
