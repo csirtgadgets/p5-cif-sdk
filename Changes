@@ -1,5 +1,8 @@
 Revision history for CIF-SDK
 
+0.00_03 - 2014-10-20
+    - bugfix to address regex
+
 0.00_02 - 2014-09-14
     - added bin/cif-feed for feed generation
     - cleaed up headers for use with new api
