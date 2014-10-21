@@ -1,6 +1,7 @@
 Revision history for CIF-SDK
 
-0.00_03 - 2014-10-20
+0.00_03 - 2014-10-21
+    - added nowait option (use with caution and KeepAlive=0)
     - bugfix to address regex
 
 0.00_02 - 2014-09-14
