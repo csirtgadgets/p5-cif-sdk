@@ -34,7 +34,7 @@ sub process {
 	
 	my $whitelist = Net::Patricia->new();
 	$whitelist->add_string($_) foreach @perm_whitelist;
-	$whitelist->add_string($_) foreach (@{$args->{'whitelist'}});
+	$whitelist->add_string($_->{'observable'}) foreach (@{$args->{'whitelist'}});
 	
 	my @list;
 	

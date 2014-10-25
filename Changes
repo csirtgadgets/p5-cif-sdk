@@ -1,5 +1,8 @@
 Revision history for CIF-SDK
 
+0.00_04 - 2014-10
+    - bugfix to lib/CIF/SDK/Feed/Ipv4
+
 0.00_03 - 2014-10-21
     - added nowait option (use with caution and KeepAlive=0)
     - bugfix to address regex
