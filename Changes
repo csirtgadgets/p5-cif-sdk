@@ -1,7 +1,8 @@
 Revision history for CIF-SDK
 
-0.00_04 - 2014-10
+0.00_04 - 2014-10-28
     - bugfix to lib/CIF/SDK/Feed/Ipv4
+    - setting static ver of Log::Log4perl
 
 0.00_03 - 2014-10-21
     - added nowait option (use with caution and KeepAlive=0)
