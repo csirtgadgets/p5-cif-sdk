@@ -26,7 +26,7 @@ my $builder = Module::Build->new(
         'Regexp::Common::net'   => 0,
         'Regexp::IPv6'          => 0,
         'Parse::Range'          => 0,
-        'Log::Log4perl'         => '== 1.44',
+        'Log::Log4perl'         => '< 1.45',
         'Time::HiRes'           => 0,
         'Module::PluginFinder'  => '0.04',
         'Net::SSLeay'           => '1.49',
