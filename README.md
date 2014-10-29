@@ -8,6 +8,7 @@ We highly recomend using Ubuntu 14.04 LTS.
 ## Ubuntu 14
  ```
  sudo apt-get install -y git build-essential cpanminus libmodule-install-perl
+ sudo cpanm http://backpan.perl.org/authors/id/M/MS/MSCHILLI/Log-Log4perl-1.44.tar.gz 
  sudo cpanm git://github.com/csirtgadgets/p5-cif-sdk.git
  ```
 
@@ -15,6 +16,7 @@ We highly recomend using Ubuntu 14.04 LTS.
  ```
  sudo apt-get install -y git build-essential cpanminus libmodule-install-perl
  cpanm --self-upgrade --mirror http://cpan.metacpan.org
+ sudo cpanm http://backpan.perl.org/authors/id/M/MS/MSCHILLI/Log-Log4perl-1.44.tar.gz
  sudo cpanm git://github.com/csirtgadgets/p5-cif-sdk.git
  ```
 
