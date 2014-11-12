@@ -9,6 +9,7 @@ use CIF::SDK qw/init_logging $Logger/;
 use JSON::XS qw(encode_json decode_json);
 use Time::HiRes qw(tv_interval gettimeofday);
 use Carp;
+use Data::Dumper;
 
 =head1 NAME
 
@@ -159,24 +160,50 @@ sub _make_request {
     $Logger->debug('making request...');
     
     my $resp = $self->handle->get($uri,$params);
-    return 'request failed('.$resp->{'status'}.'): '.$resp->{'reason'}.': '.$resp->{'content'} unless($resp->{'status'} eq '200');
     
-    $Logger->debug('success, decoding...');
-    return undef, decode_json($resp->{'content'});
+    $Logger->info('status: '.$resp->{'status'});
+    
+    $Logger->debug('decoding content..');
+    $resp->{'content'} = decode_json($resp->{'content'});
+    
+    return $resp;
 }
 
-sub search_feed {
+=head2 ping
+
+=over
+
+  $ret = $client->ping();
+
+=back
+
+=cut
+
+sub ping {
     my $self = shift;
-    my $args = shift;
+    $Logger->debug('generating ping...');
+
+    my $t0 = [gettimeofday()];
     
-    return $self->_make_request('feeds',$args);
+    my $resp = $self->_make_request('ping');
+    unless($resp->{'status'} eq '200'){
+        $Logger->warn($resp->{'content'}->{'message'});
+        return $resp->{'content'}->{'message'};
+    }
+    return undef, tv_interval($t0,[gettimeofday()]);
 }
 
 sub search {
     my $self = shift;
     my $args = shift;
 
-    return $self->_make_request('observables',$args);
+    my $resp = $self->_make_request('observables',$args);
+
+    unless($resp->{'status'} eq '200'){
+        $Logger->warn($resp->{'content'}->{'message'});
+        return $resp->{'content'}->{'message'};
+    }
+    return undef, $resp->{'content'};
 }
 
 sub search_id {
@@ -188,7 +215,24 @@ sub search_id {
 		token	=> $args->{'token'} || $self->token,
 	};
 	
-	return $self->_make_request('observables',$params);
+	my $resp = $self->_make_request('observables',$params);
+	unless($resp->{'status'} eq '200'){
+	    $Logger->warn($resp->{'content'}->{'message'});
+        return $resp->{'content'}->{'message'};
+    }
+    return undef, $resp->{'content'};
+}
+
+sub search_feed {
+    my $self = shift;
+    my $args = shift;
+    
+    my $resp = $self->_make_request('feeds',$args);
+    unless($resp->{'status'} eq '200'){
+        $Logger->warn($resp->{'content'}->{'message'});
+        return $resp->{'content'}->{'message'};
+    }
+    return undef, $resp->{'content'};
 }
 
 =head2 submit
@@ -210,14 +254,24 @@ sub submit_feed {
 	my $self = shift;
 	my $args = shift;
 	
-	return $self->_submit('feeds',$args);
+	my $resp = $self->_submit('feeds',$args);
+	unless($resp->{'status'} eq '200'){
+	    $Logger->warn($resp->{'content'}->{'message'});
+        return undef, $resp->{'content'}->{'message'};
+    }
+    return $resp->{'content'};
 };
 
 sub submit {
 	my $self = shift;
 	my $args = shift;
 	
-    return $self->_submit('observables',$args);
+    my $resp = $self->_submit('observables',$args);
+    unless($resp->{'status'} eq '200'){
+        $Logger->warn($resp->{'content'}->{'message'});
+        return undef, $resp->{'content'}->{'message'};
+    }
+    return $resp->{'content'};
 }
 
 sub _submit {
@@ -254,26 +308,5 @@ sub _submit {
     return (undef, $content, $resp);
 }	
 
-=head2 ping
-
-=over
-
-  $ret = $client->ping();
-
-=back
-
-=cut
-
-sub ping {
-    my $self = shift;
-    $Logger->debug('generating ping...');
-
-    my $t0 = [gettimeofday()];
-    
-    my $ret = $self->_make_request('ping');
-    
-    $Logger->debug('sucesss...');
-    return undef, tv_interval($t0,[gettimeofday()]);
-}
 
 1;
