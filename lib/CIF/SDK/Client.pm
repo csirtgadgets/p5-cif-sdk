@@ -47,7 +47,8 @@ the SDK is a thin development kit for developing CIF applications
 
 use constant {
     HEADERS => {
-        'Accept'  => 'vnd.cif.v'.$CIF::SDK::API_VERSION.'+json',
+        'Accept'        => 'vnd.cif.v'.$CIF::SDK::API_VERSION.'+json',
+        'Content-Type'  => 'application/json',
     },
     AGENT   => 'cif-sdk-perl/'.$CIF::SDK::VERSION,
     TIMEOUT => 300,
@@ -148,8 +149,7 @@ sub _make_request {
 	$uri = $self->remote.'/'.$uri;
 	
 	my $token = $params->{'token'} || $self->token;
-	
-	$uri = $uri.'?token='.$token;
+	$self->{'headers'}->{'Authorization'} = 'Token token='.$token;
 
 	foreach my $p (keys %$params){
 		next unless($params->{$p});
@@ -159,7 +159,7 @@ sub _make_request {
 	$Logger->debug('uri created: '.$uri);
     $Logger->debug('making request...');
     
-    my $resp = $self->handle->get($uri,$params);
+    my $resp = $self->handle->request('GET',$uri,$params);
     
     $Logger->info('status: '.$resp->{'status'});
     
@@ -280,20 +280,22 @@ sub _submit {
     my $args = shift;
     
     $args = [$args] if(ref($args) eq 'HASH');
+
+	$self->{'headers'}->{'Authorization'} = 'Token token='.$self->token;
     
     $Logger->debug('encoding args...');
     
     $args = encode_json($args);
 
-    $uri = $self->remote.'/'.$uri.'/?token='.$self->token;
+    $uri = $self->remote.'/'.$uri;
     
     if($self->nowait){
-        $uri .= '&nowait=1';
+        $uri .= '?nowait=1';
     }
     
     $Logger->debug('uri generated: '.$uri);
     $Logger->debug('making request...');
-    my $resp = $self->handle->put($uri,{ content => $args });
+    my $resp = $self->handle->request('PUT',$uri,{ content => $args });
     
     unless($resp->{'status'} < 399){
         $Logger->warn('status: '.$resp->{'status'}.' -- '.$resp->{'reason'});

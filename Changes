@@ -1,8 +1,9 @@
 Revision history for CIF-SDK
 
-0.00_05 - 2014-11-12
+0.00_05 - 2014-11-
     - changes to in error handling (for token support)
     - switched from ~/.cif to ~/.cif.yml (better editor support)
+    - moving token auth into headers
 
 0.00_04 - 2014-10-28
     - bugfix to lib/CIF/SDK/Feed/Ipv4
