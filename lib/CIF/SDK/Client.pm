@@ -188,9 +188,9 @@ sub ping {
     my $resp = $self->_make_request('ping');
     unless($resp->{'status'} eq '200'){
         $Logger->warn($resp->{'content'}->{'message'});
-        return $resp->{'content'}->{'message'};
+        return undef, $resp->{'content'}->{'message'};
     }
-    return undef, tv_interval($t0,[gettimeofday()]);
+    return tv_interval($t0,[gettimeofday()]);
 }
 
 sub search {
@@ -201,9 +201,9 @@ sub search {
 
     unless($resp->{'status'} eq '200'){
         $Logger->warn($resp->{'content'}->{'message'});
-        return $resp->{'content'}->{'message'};
+        return undef, $resp->{'content'}->{'message'};
     }
-    return undef, $resp->{'content'};
+    return $resp->{'content'};
 }
 
 sub search_id {
@@ -218,9 +218,9 @@ sub search_id {
 	my $resp = $self->_make_request('observables',$params);
 	unless($resp->{'status'} eq '200'){
 	    $Logger->warn($resp->{'content'}->{'message'});
-        return $resp->{'content'}->{'message'};
+        return undef, $resp->{'content'}->{'message'};
     }
-    return undef, $resp->{'content'};
+    return $resp->{'content'};
 }
 
 sub search_feed {
@@ -230,9 +230,9 @@ sub search_feed {
     my $resp = $self->_make_request('feeds',$args);
     unless($resp->{'status'} eq '200'){
         $Logger->warn($resp->{'content'}->{'message'});
-        return $resp->{'content'}->{'message'};
+        return undef, $resp->{'content'}->{'message'};
     }
-    return undef, $resp->{'content'};
+    return $resp->{'content'};
 }
 
 =head2 submit
@@ -267,7 +267,7 @@ sub submit {
 	my $args = shift;
 	
     my $resp = $self->_submit('observables',$args);
-    unless($resp->{'status'} eq '200'){
+    unless($resp->{'status'} eq '201' || $resp->{'status'} eq '200'){
         $Logger->warn($resp->{'content'}->{'message'});
         return undef, $resp->{'content'}->{'message'};
     }
@@ -296,16 +296,13 @@ sub _submit {
     my $resp = $self->handle->put($uri,{ content => $args });
     
     unless($resp->{'status'} < 399){
-        $Logger->fatal('status: '.$resp->{'status'}.' -- '.$resp->{'reason'});
-        $Logger->fatal($resp->{'content'});
-        croak('submission failed: contact administrator');
+        $Logger->warn('status: '.$resp->{'status'}.' -- '.$resp->{'reason'});
+        $Logger->info($resp->{'content'});
     }
     $Logger->debug('decoding response..');
+    $resp->{'content'} = decode_json($resp->{'content'});
     
-    my $content = decode_json($resp->{'content'});
-    
-    $Logger->debug('success...');
-    return (undef, $content, $resp);
+    return $resp;
 }	
 
 

@@ -172,12 +172,12 @@ if($ping){
     $SIG{'INT'} = sub { $d = 1; };
     my ($x,$y) = (0, $ping_ttl);
     while(!$d){
-        ($err,$ret) = $cli->ping();
+        ($ret,$err) = $cli->ping();
         if($ret){
-        say 'roundtrip: '.$ret.' ms';
-        select(undef,undef,undef,1);
-        $x++ if($y); # increase if we're not going infinately
-        $d = 1 if($x && ($x == $y)); # done if we reach ttl
+            say 'roundtrip: '.$ret.' ms';
+            select(undef,undef,undef,1);
+            $x++ if($y); # increase if we're not going infinately
+            $d = 1 if($x && ($x == $y)); # done if we reach ttl
         } else {
             $Logger->fatal($err);
             $d = 1;
@@ -186,9 +186,9 @@ if($ping){
 } elsif($filters){
     $Logger->info('running search...');
     if($feed){
-        ($err,$ret) = $cli->search_feed($filters);
+        ($ret,$err) = $cli->search_feed($filters);
     } else {
-        ($err,$ret) = $cli->search($filters);
+        ($ret,$err) = $cli->search($filters);
     }
     
     croak($err) if($err);
