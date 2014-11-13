@@ -21,7 +21,7 @@ use constant {
     TIMEOUT  => 300,
     LIMIT   => 500,
     FORMAT  => 'table',
-    CONFIG  => $ENV{'HOME'}.'/.cif',
+    CONFIG  => $ENV{'HOME'}.'/.cif.yml',
 };
 
 my $help;
@@ -31,7 +31,6 @@ my $timeout         = TIMEOUT;
 my $token;
 my $format          = FORMAT;
 my $ping            = 0;
-my $nolog           = 0;
 my $limit;
 my $submit		    = 0;
 my $ping_ttl        = 4;
@@ -70,7 +69,7 @@ GetOptions(
     
     'ping|p'            => \$ping,
     'format|f=s'        => \$format,
-    'nolog|n'           => \$nolog,
+    'nolog|n'           => \$filters->{'nolog'},
     'ttl=n'				=> \$ping_ttl,
 ) or die(usage());
 
@@ -80,12 +79,12 @@ die(usage()) unless($filters || $ping || $submit);
 if(-e $config){
 	$config = parse_config($config)->{'client'} || {};
 
-    $remote         = $config->{'remote'} if($config->{'remote'} && $remote eq REMOTE);
-    $token          = $config->{'token'} if($config->{'token'} && !$token);
-    $no_verify_ssl  = $config->{'no_verify_ssl'} if($config->{'no_verify_ssl'} && !$no_verify_ssl); # double negative
-    $limit          = $config->{'limit'} if($config->{'limit'} && $limit != LIMIT);
-    $timeout        = $config->{'timeout'} if($config->{'timeout'} && $timeout != TIMEOUT);
-    $nolog          = $config->{'nolog'} if($config->{'nolog'});
+    $remote             = $config->{'remote'} if($config->{'remote'} && $remote eq REMOTE);
+    $token              = $config->{'token'} if($config->{'token'} && !$token);
+    $no_verify_ssl      = $config->{'no_verify_ssl'} if($config->{'no_verify_ssl'} && !$no_verify_ssl); # double negative
+    $limit              = $config->{'limit'} if($config->{'limit'} && $limit != LIMIT);
+    $timeout            = $config->{'timeout'} if($config->{'timeout'} && $timeout != TIMEOUT);
+    $filters->{'nolog'} = $config->{'nolog'} if($config->{'nolog'});
 }
 
 my $loglevel = ($debug) ? 'DEBUG' : 'WARN';
@@ -163,16 +162,33 @@ my $cli = CIF::SDK::Client->new({
     remote      => $remote,
     timeout     => $timeout,
     verify_ssl  => ($no_verify_ssl) ? 0 : 1,
-    nolog       => $nolog,
+    nolog       => $filters->{'nolog'},
 });
 
 my ($err,$ret);
-if($filters){
+if($ping){
+     $Logger->info('pinging: '.$remote.'...');
+    my $d = 0;
+    $SIG{'INT'} = sub { $d = 1; };
+    my ($x,$y) = (0, $ping_ttl);
+    while(!$d){
+        ($ret,$err) = $cli->ping();
+        if($ret){
+            say 'roundtrip: '.$ret.' ms';
+            select(undef,undef,undef,1);
+            $x++ if($y); # increase if we're not going infinately
+            $d = 1 if($x && ($x == $y)); # done if we reach ttl
+        } else {
+            $Logger->fatal($err);
+            $d = 1;
+        }
+    }
+} elsif($filters){
     $Logger->info('running search...');
     if($feed){
-        ($err,$ret) = $cli->search_feed($filters);
+        ($ret,$err) = $cli->search_feed($filters);
     } else {
-        ($err,$ret) = $cli->search($filters);
+        ($ret,$err) = $cli->search($filters);
     }
     
     croak($err) if($err);
@@ -180,25 +196,5 @@ if($filters){
     my $formatter = CIF::SDK::FormatFactory->new_plugin({ format => $format });
     my $text = $formatter->process($ret);
     print $text."\n";
-} elsif($submit){
-    ## TODO
-    
-} elsif($ping){
-    $Logger->info('pinging: '.$remote.'...');
-    my $d = 0;
-    $SIG{'INT'} = sub { $d = 1; };
-    my ($x,$y) = (0, $ping_ttl);
-    while(!$d){
-        ($err,$ret) = $cli->ping();
-        if($ret){
-        say 'roundtrip: '.$ret.' ms';
-        select(undef,undef,undef,1);
-        $x++ if($y); # increase if we're not going infinately
-        $d = 1 if($x && ($x == $y)); # done if we reach ttl
-        } else {
-            $Logger->fatal($err);
-            $d = 1;
-        }
-    }
 }
 $Logger->info('done...');

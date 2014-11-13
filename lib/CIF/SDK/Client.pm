@@ -9,6 +9,7 @@ use CIF::SDK qw/init_logging $Logger/;
 use JSON::XS qw(encode_json decode_json);
 use Time::HiRes qw(tv_interval gettimeofday);
 use Carp;
+use Data::Dumper;
 
 =head1 NAME
 
@@ -46,7 +47,8 @@ the SDK is a thin development kit for developing CIF applications
 
 use constant {
     HEADERS => {
-        'Accept'  => 'vnd.cif.v'.$CIF::SDK::API_VERSION.'+json',
+        'Accept'        => 'vnd.cif.v'.$CIF::SDK::API_VERSION.'+json',
+        'Content-Type'  => 'application/json',
     },
     AGENT   => 'cif-sdk-perl/'.$CIF::SDK::VERSION,
     TIMEOUT => 300,
@@ -141,42 +143,77 @@ sub _build_handle {
 
 sub _make_request {
 	my $self 	= shift;
-	my $uri	 	= shift;
+	my $route 	= shift;
 	my $params 	= shift || {};
 	
-	$uri = $self->remote.'/'.$uri;
+	my $uri = '';
 	
 	my $token = $params->{'token'} || $self->token;
-	
-	$uri = $uri.'?token='.$token;
+	$self->{'headers'}->{'Authorization'} = 'Token token='.$token;
 
 	foreach my $p (keys %$params){
 		next unless($params->{$p});
-		$uri .= '&'.$p.'='.$params->{$p};
+		$uri .= $p.'='.$params->{$p}.'&';
 	}
+	
+	$uri =~ s/&$//;
+	$uri = '?'.$uri;
+	
+	$uri = $self->remote.'/'.$route.$uri;
 	
 	$Logger->debug('uri created: '.$uri);
     $Logger->debug('making request...');
     
-    my $resp = $self->handle->get($uri,$params);
-    return 'request failed('.$resp->{'status'}.'): '.$resp->{'reason'}.': '.$resp->{'content'} unless($resp->{'status'} eq '200');
+    my $resp = $self->handle->request('GET',$uri,$params);
     
-    $Logger->debug('success, decoding...');
-    return undef, decode_json($resp->{'content'});
+    $Logger->info('status: '.$resp->{'status'});
+    
+    if($resp->{'headers'}->{'content-type'} =~ /^application\/json$/){
+        $Logger->debug('decoding content..');
+        $resp->{'content'} = decode_json($resp->{'content'});
+    } else {
+        if($resp->{'status'} eq '404'){
+            $resp->{'content'} = { message => 'uri not found: '.$uri };
+        }
+    }
+    return $resp;
 }
 
-sub search_feed {
+=head2 ping
+
+=over
+
+  $ret = $client->ping();
+
+=back
+
+=cut
+
+sub ping {
     my $self = shift;
-    my $args = shift;
+    $Logger->debug('generating ping...');
+
+    my $t0 = [gettimeofday()];
     
-    return $self->_make_request('feeds',$args);
+    my $resp = $self->_make_request('ping');
+    unless($resp->{'status'} eq '200'){
+        $Logger->warn($resp->{'content'}->{'message'});
+        return undef, $resp->{'content'}->{'message'};
+    }
+    return tv_interval($t0,[gettimeofday()]);
 }
 
 sub search {
     my $self = shift;
     my $args = shift;
 
-    return $self->_make_request('observables',$args);
+    my $resp = $self->_make_request('observables',$args);
+
+    unless($resp->{'status'} eq '200'){
+        $Logger->warn($resp->{'content'}->{'message'});
+        return undef, $resp->{'content'}->{'message'};
+    }
+    return $resp->{'content'};
 }
 
 sub search_id {
@@ -188,7 +225,28 @@ sub search_id {
 		token	=> $args->{'token'} || $self->token,
 	};
 	
-	return $self->_make_request('observables',$params);
+	my $resp = $self->_make_request('observables',$params);
+	unless($resp->{'status'} eq '200'){
+	    $Logger->warn($resp->{'content'}->{'message'});
+        return undef, $resp->{'content'}->{'message'};
+    }
+    return $resp->{'content'};
+}
+
+sub search_feed {
+    my $self = shift;
+    my $args = shift;
+    
+    my $resp = $self->_make_request('feeds',$args);
+    unless($resp->{'status'} eq '200'){
+        if($resp->{'status'} gt '500'){
+            return undef, $resp->{'content'};
+        } else {
+            $Logger->warn($resp->{'content'}->{'message'});
+            return undef, $resp->{'content'}->{'message'};
+        }
+    }
+    return $resp->{'content'};
 }
 
 =head2 submit
@@ -210,14 +268,24 @@ sub submit_feed {
 	my $self = shift;
 	my $args = shift;
 	
-	return $self->_submit('feeds',$args);
+	my $resp = $self->_submit('feeds',$args);
+	unless($resp->{'status'} eq '200' or $resp->{'status'} eq '201'){
+	    $Logger->warn($resp->{'content'}->{'message'});
+        return undef, $resp->{'content'}->{'message'};
+    }
+    return $resp->{'content'};
 };
 
 sub submit {
 	my $self = shift;
 	my $args = shift;
 	
-    return $self->_submit('observables',$args);
+    my $resp = $self->_submit('observables',$args);
+    unless($resp->{'status'} eq '201' || $resp->{'status'} eq '200'){
+        $Logger->warn($resp->{'content'}->{'message'});
+        return undef, $resp->{'content'}->{'message'};
+    }
+    return $resp->{'content'};
 }
 
 sub _submit {
@@ -226,54 +294,32 @@ sub _submit {
     my $args = shift;
     
     $args = [$args] if(ref($args) eq 'HASH');
+
+	$self->{'headers'}->{'Authorization'} = 'Token token='.$self->token;
     
     $Logger->debug('encoding args...');
     
     $args = encode_json($args);
 
-    $uri = $self->remote.'/'.$uri.'/?token='.$self->token;
+    $uri = $self->remote.'/'.$uri;
     
     if($self->nowait){
-        $uri .= '&nowait=1';
+        $uri .= '?nowait=1';
     }
     
     $Logger->debug('uri generated: '.$uri);
     $Logger->debug('making request...');
-    my $resp = $self->handle->put($uri,{ content => $args });
+    my $resp = $self->handle->request('PUT',$uri,{ content => $args });
     
     unless($resp->{'status'} < 399){
-        $Logger->fatal('status: '.$resp->{'status'}.' -- '.$resp->{'reason'});
-        $Logger->fatal($resp->{'content'});
-        croak('submission failed: contact administrator');
+        $Logger->warn('status: '.$resp->{'status'}.' -- '.$resp->{'reason'});
+        $Logger->info($resp->{'content'});
     }
     $Logger->debug('decoding response..');
+    $resp->{'content'} = decode_json($resp->{'content'});
     
-    my $content = decode_json($resp->{'content'});
-    
-    $Logger->debug('success...');
-    return (undef, $content, $resp);
+    return $resp;
 }	
 
-=head2 ping
-
-=over
-
-  $ret = $client->ping();
-
-=back
-
-=cut
-
-sub ping {
-    my $self = shift;
-    $Logger->debug('generating ping...');
-
-    my $t0 = [gettimeofday()];
-    
-    my $ret = $self->_make_request('ping');
-    
-    $Logger->debug('sucesss...');
-    return undef, tv_interval($t0,[gettimeofday()]);
-}
 
 1;
