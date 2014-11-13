@@ -32,7 +32,7 @@ We highly recomend using Ubuntu 14.04 LTS.
 ### Running
   ```bash
   $ cif --token 1234 --remote 'https://localhost' -q example.com
-  $ cif-feed --confidence 65 --tags malware,botnet --otype fqdn
+  $ cif-feed --confidence 65 --tags malware,botnet --otype fqdn # requires a --write enabled token
   $ cif-feed --confidence 85 --tags hijacked --otype ipv4
   ```
   
