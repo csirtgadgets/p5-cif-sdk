@@ -22,7 +22,7 @@ use constant {
     TIMEOUT_DEFAULT => 300,
     LIMIT_DEFAULT   => 500,
     FORMAT_DEFAULT  => 'table',
-    CONFIG_DEFAULT  => $ENV{'HOME'}.'/.cif',
+    CONFIG_DEFAULT  => $ENV{'HOME'}.'/.cif.yml',
 };
 
 my $help;
@@ -38,7 +38,7 @@ my $config          = CONFIG_DEFAULT();
 
 my $filters = {
 	confidence => 85,
-	groups     => 'everyone',
+	group      => 'everyone',
 	limit      => 50000, # arbitrary, need to think about resource limits on things like
 	                     # firewalls and routers
 	otype      => 'ipv4',
@@ -61,7 +61,7 @@ GetOptions(
     'tags|t=s'          => \$filters->{'tags'},
     'cc=s'              => \$filters->{'cc'},
     'otype=s'           => \$filters->{'otype'},
-    'providers=s'       => \$filters->{'provider'},
+    'provider=s'       => \$filters->{'provider'},
     'application=s'     => \$filters->{'application'},
     
     'no-verify-ssl'     => \$no_verify_ssl,
@@ -149,12 +149,14 @@ my $cli = CIF::SDK::Client->new({
 
 $Logger->debug('pulling '.$filters->{'otype'}.' whitelist');
 
-my ($err,$ret) = $cli->search({
+my ($ret,$err) = $cli->search({
 	otype      => $filters->{'otype'},
 	tags       => 'whitelist',
 	confidence => 25, # TODO -- arbitrary
 	limit      => $filters->{'limit'},
 });
+
+croak($err) if($err);
 
 my $whitelist = $ret;
 
@@ -165,7 +167,7 @@ $Logger->debug('got whitelist ['.$num_whitelist.']... grabbing requested dataset
 foreach my $confidence (@confidence_values){
     $filters->{'confidence'} = $confidence;
     $ret = -1;
-    ($err,$ret) = $cli->search($filters);
+    ($ret,$err) = $cli->search($filters);
 
     my $num_ret = ($#{$ret} + 1);
     $Logger->debug('got data-set: '.$num_ret.' generating feed');
@@ -183,10 +185,10 @@ foreach my $confidence (@confidence_values){
     	otype          => $filters->{'otype'},
     	reporttime 	   => $timestamp,
     	tlp            => $filters->{'tlp'},
-    	groups         => $filters->{'group'},
+    	group          => $filters->{'group'},
     	confidence     => $confidence,
     	cc             => $filters->{'cc'},
-    	providers      => $filters->{'provider'},
+    	provider       => $filters->{'provider'},
     });
 }
 	

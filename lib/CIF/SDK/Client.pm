@@ -167,7 +167,7 @@ sub _make_request {
     my $resp = $self->handle->request('GET',$uri,$params);
     
     $Logger->info('status: '.$resp->{'status'});
-
+    
     if($resp->{'headers'}->{'content-type'} =~ /^application\/json$/){
         $Logger->debug('decoding content..');
         $resp->{'content'} = decode_json($resp->{'content'});
@@ -239,8 +239,12 @@ sub search_feed {
     
     my $resp = $self->_make_request('feeds',$args);
     unless($resp->{'status'} eq '200'){
-        $Logger->warn($resp->{'content'}->{'message'});
-        return undef, $resp->{'content'}->{'message'};
+        if($resp->{'status'} gt '500'){
+            return undef, $resp->{'content'};
+        } else {
+            $Logger->warn($resp->{'content'}->{'message'});
+            return undef, $resp->{'content'}->{'message'};
+        }
     }
     return $resp->{'content'};
 }
@@ -265,7 +269,7 @@ sub submit_feed {
 	my $args = shift;
 	
 	my $resp = $self->_submit('feeds',$args);
-	unless($resp->{'status'} eq '200'){
+	unless($resp->{'status'} eq '200' or $resp->{'status'} eq '201'){
 	    $Logger->warn($resp->{'content'}->{'message'});
         return undef, $resp->{'content'}->{'message'};
     }
