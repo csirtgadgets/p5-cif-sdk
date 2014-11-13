@@ -143,18 +143,23 @@ sub _build_handle {
 
 sub _make_request {
 	my $self 	= shift;
-	my $uri	 	= shift;
+	my $route 	= shift;
 	my $params 	= shift || {};
 	
-	$uri = $self->remote.'/'.$uri;
+	my $uri = '';
 	
 	my $token = $params->{'token'} || $self->token;
 	$self->{'headers'}->{'Authorization'} = 'Token token='.$token;
 
 	foreach my $p (keys %$params){
 		next unless($params->{$p});
-		$uri .= '&'.$p.'='.$params->{$p};
+		$uri .= $p.'='.$params->{$p}.'&';
 	}
+	
+	$uri =~ s/&$//;
+	$uri = '?'.$uri;
+	
+	$uri = $self->remote.'/'.$route.$uri;
 	
 	$Logger->debug('uri created: '.$uri);
     $Logger->debug('making request...');
@@ -162,10 +167,15 @@ sub _make_request {
     my $resp = $self->handle->request('GET',$uri,$params);
     
     $Logger->info('status: '.$resp->{'status'});
-    
-    $Logger->debug('decoding content..');
-    $resp->{'content'} = decode_json($resp->{'content'});
-    
+
+    if($resp->{'headers'}->{'content-type'} =~ /^application\/json$/){
+        $Logger->debug('decoding content..');
+        $resp->{'content'} = decode_json($resp->{'content'});
+    } else {
+        if($resp->{'status'} eq '404'){
+            $resp->{'content'} = { message => 'uri not found: '.$uri };
+        }
+    }
     return $resp;
 }
 
