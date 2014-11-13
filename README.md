@@ -24,7 +24,7 @@ We highly recomend using Ubuntu 14.04 LTS.
 ## Client
 ### Config
   ```yaml
-  # ~/.cif
+  # ~/.cif.yml
   client:
     remote: https://localhost
     token: 1234
