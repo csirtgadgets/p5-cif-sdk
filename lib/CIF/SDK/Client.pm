@@ -203,6 +203,20 @@ sub ping {
     return tv_interval($t0,[gettimeofday()]);
 }
 
+sub ping_write {
+    my $self = shift;
+    $Logger->debug('generating ping...');
+
+    my $t0 = [gettimeofday()];
+    
+    my $resp = $self->_make_request('ping', { 'write' => 1 });
+    unless($resp->{'status'} eq '200'){
+        $Logger->warn($resp->{'content'}->{'message'});
+        return undef, $resp->{'content'}->{'message'};
+    }
+    return tv_interval($t0,[gettimeofday()]);
+}
+
 sub search {
     my $self = shift;
     my $args = shift;
