@@ -174,6 +174,8 @@ sub _make_request {
     } else {
         if($resp->{'status'} eq '404'){
             $resp->{'content'} = { message => 'uri not found: '.$uri };
+        } else {
+            $resp->{'content'} = { message => $resp->{'content'} };
         }
     }
     return $resp;

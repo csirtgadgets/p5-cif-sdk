@@ -80,7 +80,7 @@ if(-e $config){
 
     $remote             = $config->{'remote'} if($config->{'remote'} && $remote eq REMOTE);
     $token              = $config->{'token'} if($config->{'token'} && !$token);
-    $no_verify_ssl      = $config->{'no_verify_ssl'} if($config->{'no_verify_ssl'} && !$no_verify_ssl); # double negative
+    $no_verify_ssl      = $config->{'no_verify_ssl'} if($config->{'no_verify_ssl'} && !$no_verify_ssl);
     $timeout            = $config->{'timeout'} if($config->{'timeout'} && $timeout != TIMEOUT);
     $filters->{'nolog'} = $config->{'nolog'} if($config->{'nolog'});
 }
