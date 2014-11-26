@@ -31,7 +31,6 @@ my $timeout         = TIMEOUT;
 my $token;
 my $format          = FORMAT;
 my $ping            = 0;
-my $limit;
 my $submit		    = 0;
 my $ping_ttl        = 4;
 my $debug           = 0;
@@ -54,7 +53,7 @@ GetOptions(
     'submit|s'          => \$submit,
     'token|T=s'         => \$token,
     'group|g=s'         => \$filters->{'group'},
-    'limit|l=i'         => \$limit,
+    'limit|l=i'         => \$filters->{'limit'},
     'confidence|c=i'    => \$filters->{'confidence'},
     'tags|t=s'          => \$filters->{'tags'},
     'cc=s'              => \$filters->{'cc'},
@@ -82,7 +81,6 @@ if(-e $config){
     $remote             = $config->{'remote'} if($config->{'remote'} && $remote eq REMOTE);
     $token              = $config->{'token'} if($config->{'token'} && !$token);
     $no_verify_ssl      = $config->{'no_verify_ssl'} if($config->{'no_verify_ssl'} && !$no_verify_ssl); # double negative
-    $limit              = $config->{'limit'} if($config->{'limit'} && $limit != LIMIT);
     $timeout            = $config->{'timeout'} if($config->{'timeout'} && $timeout != TIMEOUT);
     $filters->{'nolog'} = $config->{'nolog'} if($config->{'nolog'});
 }
