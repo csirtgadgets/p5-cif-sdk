@@ -219,6 +219,22 @@ sub ping_write {
     return tv_interval($t0,[gettimeofday()]);
 }
 
+sub aggregate {
+    my $self = shift;
+    my $args = shift;
+    
+    my $a = $args->{'aggregate'};
+    
+    my $h = {};
+    my @ret;
+    foreach (@{$args->{'data'}}){
+        next if(exists($h->{$_->{$a}}));
+        push(@ret,$_);
+        $h->{$_->{$a}} = 1;
+    }
+    return \@ret;  
+}
+
 sub search {
     my $self = shift;
     my $args = shift;
