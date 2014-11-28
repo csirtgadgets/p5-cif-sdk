@@ -23,6 +23,8 @@ sub process {
     pop(@header);
     my $table = Text::Table->new(@header);
     
+    $data = [ sort { $a->{$self->sort} cmp $b->{$self->sort} } @$data ];
+    
     foreach my $d (@$data){
         my @array;
         foreach my $c (@{$self->get_columns()}){

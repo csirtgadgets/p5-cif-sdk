@@ -8,13 +8,10 @@ use Mouse::Role;
 requires qw/understands process/;
 
 use constant DEFAULT_COLS   => [ 
-    'tlp','group','lasttime','observable','cc','confidence','tags','rdata','provider'
+    'tlp','group','reporttime','lasttime','observable','cc','confidence','tags','rdata','provider'
 ];
 
-use constant DEFAULT_SORT   => [
-    { 'lasttime'    => 'ASC' },
-    { 'firsttime'   => 'ASC' },
-];
+use constant DEFAULT_SORT   => 'lasttime';
 
 has 'columns'   => (
     is      => 'ro',
@@ -25,7 +22,6 @@ has 'columns'   => (
 
 has 'sort'  => (
     is      => 'ro',
-    isa     => 'ArrayRef',
     default => sub { DEFAULT_SORT() },
 );
 

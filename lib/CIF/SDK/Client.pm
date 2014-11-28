@@ -295,7 +295,6 @@ sub submit_feed {
 sub submit {
 	my $self = shift;
 	my $args = shift;
-	
     my $resp = $self->_submit('observables',$args);
     unless($resp->{'status'} eq '201' || $resp->{'status'} eq '200'){
         $Logger->warn($resp->{'content'}->{'message'});

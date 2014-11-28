@@ -37,6 +37,7 @@ my $debug           = 0;
 my $verbosity       = 0;
 my $config          = CONFIG;
 my $feed;
+my $sortby          = 'lasttime';
 
 my $filters;
 
@@ -63,6 +64,7 @@ GetOptions(
     'provider=s'        => \$filters->{'provider'},
     'rdata=s'           => \$filters->{'rdata'},
     'feed'              => \$feed,
+    'sortby'            => \$sortby,
     
     'no-verify-ssl'     => \$no_verify_ssl,
     
@@ -141,6 +143,7 @@ Advanced Options:
     -T, --token=STRING          specify an access token
     -R, --remote=STRING         specify the remote, default: $remote
     --no-verify-ssl             turn off SSL/TLS verification
+    --sortby                    sort output, default: $sortby
 
 Ping Options:
     --ttl=INT                   specify number of pings to send, default: $ping_ttl
@@ -191,7 +194,7 @@ if($ping){
     
     croak($err) if($err);
     $Logger->info('search returned, formatting..');
-    my $formatter = CIF::SDK::FormatFactory->new_plugin({ format => $format });
+    my $formatter = CIF::SDK::FormatFactory->new_plugin({ format => $format, sortby => $sortby });
     my $text = $formatter->process($ret);
     print $text."\n";
 }

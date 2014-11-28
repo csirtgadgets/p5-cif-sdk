@@ -1,5 +1,8 @@
 Revision history for CIF-SDK
 
+0.00_09 - 2014-11-28
+    - bugfix to --sortby
+
 0.00_08 - 2014-11-26
     - minor bugfixes
 
