@@ -133,7 +133,6 @@ EOF
 
 my $plugin = CIF::SDK::FeedFactory->new_plugin({ otype => $filters->{'otype'} }) || croak('unknown otype');
 
-
 my @confidence_values = split(/,/,$filters->{'confidence'});
 
 my $timestamp = DateTime->from_epoch(epoch => time());
@@ -191,7 +190,5 @@ foreach my $confidence (@confidence_values){
     	provider       => $filters->{'provider'},
     });
 }
-	
-
 
 $Logger->info('done...');
