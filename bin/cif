@@ -131,22 +131,32 @@ Options:
     -l, --limit=INT             specify a return limit (default set at router)
     -s, --submit                submit data via STDIN (json keypairs)
     
-    -h, --help                  this message     
+    -h, --help                  this message
+    --feed                      <to do>
 
 Filters:
     
     -c, --confidence=INT        by confidence (greater or eaqual to)
-    -g, --groups STRING         by groups (everyone,group1,group2, ...)
-    --tags STRING,STRING        by tags (scanner,hijacked,botnet, ...)
+    -g, --groups=STRING         by groups (everyone,group1,group2, ...)
+    -l, --limit=STRINT          <to do>
+    -n, --nolog                 do not log the query
+    --tags=STRING,STRING        by tags (scanner,hijacked,botnet, ...)
     --cc=STRING,STRING          by country codes (RU,US, ...)
     --asn=INT,INT               by asns (1234,2445, ...)
     --otype=STRING,STRING       by observable type (ipv4,fqdn,url, ...)
     --provider=STRING,STRING    by provider (spamhaus.org,dragonresearchgroup.org, ...)
+    --application=STRING        <to do>
+    --rdata=STRING              by rdata
+
     
 Advanced Options:
 
+    -C, --config=STRING         specify a config file
+    -d, --debug                 print debug output to stdout
+    -p, --ping                  ping the router for testing connectivity
     -T, --token=STRING          specify an access token
     -R, --remote=STRING         specify the remote, default: $remote
+    -v, --verbosity             <to do>
     --no-verify-ssl             turn off SSL/TLS verification
     --sortby                    sort output, default: $sortby
     --sortby-direction          sortby direction, default: $sortby_direction
