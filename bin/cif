@@ -18,72 +18,72 @@ use Data::Dumper;
 
 use constant {
     REMOTE  => 'https://localhost',
-    TIMEOUT  => 300,
+    TIMEOUT => 300,
     LIMIT   => 500,
     FORMAT  => 'table',
     CONFIG  => $ENV{'HOME'}.'/.cif.yml',
 };
 
 my $help;
-my $remote          = REMOTE;
-my $no_verify_ssl   = 0;
-my $timeout         = TIMEOUT;
+my $remote            = REMOTE;
+my $no_verify_ssl     = 0;
+my $timeout           = TIMEOUT;
 my $token;
-my $format          = FORMAT;
-my $ping            = 0;
-my $submit		    = 0;
-my $ping_ttl        = 4;
-my $debug           = 0;
-my $verbosity       = 0;
-my $config          = CONFIG;
+my $format            = FORMAT;
+my $ping              = 0;
+my $submit            = 0;
+my $ping_ttl          = 4;
+my $debug             = 0;
+my $verbosity         = 0;
+my $config            = CONFIG;
 my $feed;
-my $sortby              = 'lasttime';
-my $sortby_direction    = 'asc';
+my $sortby            = 'lasttime';
+my $sortby_direction  = 'asc';
 my $aggregate;
 
 my $filters;
 
 Getopt::Long::Configure("bundling");
 GetOptions(
-    'help|h'            => \$help, 
-    'config|C=s'        => \$config,
-    'debug|d'           => \$debug,
-    'verbosity|v+'      => \$verbosity,
+    'help|h'              => \$help, 
+    'config|C=s'          => \$config,
+    'debug|d'             => \$debug,
+    'verbosity|v+'        => \$verbosity,
     
-    'remote|R=s'        => \$remote,
-    'query|q=s'         => \$filters->{'observable'},
-    'id=s'              => \$filters->{'id'},
-    'submit|s'          => \$submit,
-    'token|T=s'         => \$token,
-    'group|g=s'         => \$filters->{'group'},
-    'limit|l=i'         => \$filters->{'limit'},
-    'confidence|c=i'    => \$filters->{'confidence'},
-    'tags|t=s'          => \$filters->{'tags'},
-    'cc=s'              => \$filters->{'cc'},
-    'application=s'     => \$filters->{'application'},
-    'asn=s'             => \$filters->{'asn'},
-    'otype=s'           => \$filters->{'otype'},
-    'provider=s'        => \$filters->{'provider'},
-    'rdata=s'           => \$filters->{'rdata'},
-    'feed'              => \$feed,
+    'remote|R=s'          => \$remote,
+    'query|q=s'           => \$filters->{'observable'},
+    'id=s'                => \$filters->{'id'},
+    'submit|s'            => \$submit,
+    'token|T=s'           => \$token,
+    'group|g=s'           => \$filters->{'group'},
+    'limit|l=i'           => \$filters->{'limit'},
+    'confidence|c=i'      => \$filters->{'confidence'},
+    'tags|t=s'            => \$filters->{'tags'},
+    'cc=s'                => \$filters->{'cc'},
+    'application=s'       => \$filters->{'application'},
+    'asn=s'               => \$filters->{'asn'},
+    'otype=s'             => \$filters->{'otype'},
+    'provider=s'          => \$filters->{'provider'},
+    'rdata=s'             => \$filters->{'rdata'},
+    'feed'                => \$feed,
     
     'sortby=s'            => \$sortby,
     'sortby-direction=s'  => \$sortby_direction,
     'aggregate=s'         => \$aggregate,
     
-    'no-verify-ssl'     => \$no_verify_ssl,
+    'no-verify-ssl'       => \$no_verify_ssl,
     
-    'ping|p'            => \$ping,
-    'format|f=s'        => \$format,
-    'nolog|n'           => \$filters->{'nolog'},
-    'ttl=n'				=> \$ping_ttl,
+    'ping|p'              => \$ping,
+    'format|f=s'          => \$format,
+    'nolog|n'             => \$filters->{'nolog'},
+    'ttl=n'               => \$ping_ttl,
 ) or die(usage());
 
 die(usage()) if($help);
 die(usage()) unless($filters || $ping || $submit);
 
 if(-e $config){
-	$config = parse_config($config)->{'client'} || {};
+    $config = parse_config($config)->{'client'} || {};
 
     $remote             = $config->{'remote'} if($config->{'remote'} && $remote eq REMOTE);
     $token              = $config->{'token'} if($config->{'token'} && !$token);
@@ -97,7 +97,7 @@ my $loglevel = ($debug) ? 'DEBUG' : 'WARN';
 init_logging(
     { 
         level       => $loglevel,
-        category	=> 'cif',
+        category    => 'cif',
     },
 );
 
@@ -131,22 +131,32 @@ Options:
     -l, --limit=INT             specify a return limit (default set at router)
     -s, --submit                submit data via STDIN (json keypairs)
     
-    -h, --help                  this message     
+    -h, --help                  this message
+    --feed                      <to do>
 
 Filters:
     
     -c, --confidence=INT        by confidence (greater or eaqual to)
-    -g, --groups STRING         by groups (everyone,group1,group2, ...)
-    --tags STRING,STRING        by tags (scanner,hijacked,botnet, ...)
+    -g, --groups=STRING         by groups (everyone,group1,group2, ...)
+    -l, --limit=STRINT          <to do>
+    -n, --nolog                 do not log the query
+    --tags=STRING,STRING        by tags (scanner,hijacked,botnet, ...)
     --cc=STRING,STRING          by country codes (RU,US, ...)
     --asn=INT,INT               by asns (1234,2445, ...)
     --otype=STRING,STRING       by observable type (ipv4,fqdn,url, ...)
     --provider=STRING,STRING    by provider (spamhaus.org,dragonresearchgroup.org, ...)
+    --application=STRING        <to do>
+    --rdata=STRING              by rdata
+
     
 Advanced Options:
 
+    -C, --config=STRING         specify a config file
+    -d, --debug                 print debug output to stdout
+    -p, --ping                  ping the router for testing connectivity
     -T, --token=STRING          specify an access token
     -R, --remote=STRING         specify the remote, default: $remote
+    -v, --verbosity             <to do>
     --no-verify-ssl             turn off SSL/TLS verification
     --sortby                    sort output, default: $sortby
     --sortby-direction          sortby direction, default: $sortby_direction
