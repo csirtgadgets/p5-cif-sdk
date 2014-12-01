@@ -1,5 +1,8 @@
 Revision history for CIF-SDK
 
+0.00_12 - 2014-12-01
+    - fixes: https://github.com/csirtgadgets/p5-cif-sdk/issues/5
+
 0.00_11 - 2014-12-01
     - support for https://github.com/csirtgadgets/massive-octo-spice/issues/78
 

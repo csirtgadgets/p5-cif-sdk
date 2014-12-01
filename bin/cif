@@ -80,7 +80,15 @@ GetOptions(
 ) or die(usage());
 
 die(usage()) if($help);
-die(usage()) unless($filters || $ping || $submit);
+
+my $found = 0;
+foreach (keys %$filters){
+    next unless($filters->{$_});
+    $found = 1;
+    last;
+}
+
+die(usage()) unless($found || $ping || $submit);
 
 if(-e $config){
     $config = parse_config($config)->{'client'} || {};
