@@ -137,7 +137,6 @@ Options:
 Filters:
     
     -c, --confidence=INT        by confidence (greater or eaqual to)
-    -g, --groups=STRING         by groups (everyone,group1,group2, ...)
     -l, --limit=STRINT          <to do>
     -n, --nolog                 do not log the query
     --tags=STRING,STRING        by tags (scanner,hijacked,botnet, ...)
@@ -147,6 +146,7 @@ Filters:
     --provider=STRING,STRING    by provider (spamhaus.org,dragonresearchgroup.org, ...)
     --application=STRING        <to do>
     --rdata=STRING              by rdata
+    --group=STRING              by groups (everyone,group1,group2, ...)
 
     
 Advanced Options:
@@ -168,8 +168,8 @@ Ping Options:
  Examples:
     $0 -q example.com -v
     $0 --tags botnet,zeus -c 85
-    $0 --app vnc,ssh --asns 1234 --cc RU,US
-    $0 -q example.com --tags botnet,zeus -c 85 -l 50
+    $0 --application vnc,ssh --asns 1234 --cc RU,US
+    $0 -q example.com --tags botnet,zeus -c 85 --limit 50
     
     $0 --otype ipv4 --agregate observable
 
