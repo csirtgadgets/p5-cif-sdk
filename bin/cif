@@ -220,6 +220,12 @@ if($ping){
     }
     
     croak($err) if($err);
+    unless($#{$ret} > -1){
+        $Logger->info('no results found...');
+        print '';
+        exit(0);
+    }
+    
     $Logger->info('search returned, formatting..');
     
     unless(@{$ret}[0]->{$sortby}){

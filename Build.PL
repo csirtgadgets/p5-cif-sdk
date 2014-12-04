@@ -24,6 +24,7 @@ my $builder = Module::Build->new(
         'Snort::Rule'           => '1.07',
         'Regexp::Common'        => 0,
         'Regexp::Common::net'   => 0,
+	'Regexp::Common::net::CIDR'	=> 0,
         'Regexp::IPv6'          => 0,
         'Parse::Range'          => 0,
         'Log::Log4perl'         => '< 1.45',
