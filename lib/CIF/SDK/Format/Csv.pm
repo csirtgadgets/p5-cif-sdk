@@ -28,6 +28,7 @@ sub process {
         foreach my $c (@{$self->get_columns()}){
             my $x = $d->{$c} || '';
             $x = join('|',@$x) if(ref($x) eq 'ARRAY');
+            $x = '"'.$x.'"' if $x =~ /,/;
             push(@array,$x);
         }
         push(@text,join(',',@array));
