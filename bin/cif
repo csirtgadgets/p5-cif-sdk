@@ -222,6 +222,16 @@ if($ping){
     croak($err) if($err);
     $Logger->info('search returned, formatting..');
     
+    unless(@{$ret}[0]->{$sortby}){
+        $Logger->error('sort-by field: '.$sortby.' is not consistent in this data-set...');
+        $Logger->info('trying: sortby reporttime');
+        unless(@{$ret}[0]->{'reporttime'}){
+            $Logger->error("sort-by field: 'reporttime' does not exist in this data-set...");
+            croak();
+        }
+        $sortby = 'reporttime';
+    }
+    
     if(lc($sortby_direction) eq 'asc'){
         $ret = [ sort { $a->{$sortby} cmp $b->{$sortby} } @$ret ];
     } else {
