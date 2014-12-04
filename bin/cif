@@ -42,6 +42,7 @@ my $sortby            = 'lasttime';
 my $sortby_direction  = 'asc';
 my $aggregate;
 my $today;
+my $lasthour;
 
 my $filters;
 
@@ -69,6 +70,7 @@ GetOptions(
     'rdata=s'             => \$filters->{'rdata'},
     'lasttime=s'          => \$filters->{'lasttime'},
     'reporttime=s'        => \$filters->{'reporttime'},
+    'reporttime-end=s'    => \$filters->{'reporttimeend'},
     'feed'                => \$feed,
     
     'sortby=s'            => \$sortby,
@@ -76,6 +78,7 @@ GetOptions(
     'aggregate=s'         => \$aggregate,
     
     'today'               => \$today,
+    'last-hour'           => \$lasthour,
     
     'no-verify-ssl'       => \$no_verify_ssl,
     
@@ -137,6 +140,12 @@ if($today){
     $filters->{'reporttime'} = $dt->ymd().'T00:00:00Z';
 }
 
+if($lasthour){
+    my $dt = DateTime->from_epoch(epoch => time());
+    $filters->{'reporttime'} = $dt->ymd().'T'.$dt->hour.':00:00Z';
+    $filters->{'reporttimeend'} = $dt->ymd().'T'.$dt->hour.':59:59Z';
+}
+
 sub usage {
     return <<EOF;
 
@@ -166,8 +175,15 @@ Filters:
     --application=STRING        <to do>
     --rdata=STRING              by rdata
     --group=STRING              by groups (everyone,group1,group2, ...)
+    --lasttime STRING           <todo>
+    --firsttime STRING          <todo>
+    --reporttime STRING         <todo>
+    --reporttime-end STRING     <todo>
     
     --today                     auto-sets reporttime to today, 00:00:00Z (UTC)
+    
+    --last-hour                 auto-sets reporttime to the beginning of the previous full hour
+                                and reporttimeend to end of previous full hour
 
     
 Advanced Options:
