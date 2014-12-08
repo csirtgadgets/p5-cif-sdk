@@ -30,13 +30,13 @@ sub process {
     my $self = shift;
     my $data = shift;
 
-    my @text = ("#fields\tindicator\tindicator_type\tmeta.desc\tmeta.cif_confidence\n");
+    my @text = ("#fields\tindicator\tindicator_type\tmeta.desc\tmeta.cif_confidence\tmeta.source");
     
     
     foreach my $d (@$data){
         
         my @array;
-        foreach my $c (('observable','otype','tags','confidence')){
+        foreach my $c (('observable','otype','tags','confidence','provider')){
             
             my $x = $d->{$c} || '-';
             if($c eq 'otype'){
