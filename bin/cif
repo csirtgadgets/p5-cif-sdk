@@ -211,7 +211,7 @@ Ping Options:
     $0 --application vnc,ssh --asns 1234 --cc RU,US
     $0 -q example.com --tags botnet,zeus -c 85 --limit 50
     
-    $0 --otype ipv4 --agregate observable --today
+    $0 --otype ipv4 --aggregate observable --today
 
 EOF
 }
