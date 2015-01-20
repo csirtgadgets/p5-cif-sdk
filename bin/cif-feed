@@ -19,22 +19,26 @@ use Data::Dumper;
 
 use constant {
     REMOTE_DEFAULT  => 'https://localhost',
-    TIMEOUT_DEFAULT => 300,
-    LIMIT_DEFAULT   => 500,
+    TIMEOUT_DEFAULT => 600,
+    LIMIT_DEFAULT   => 50000,
     FORMAT_DEFAULT  => 'table',
     CONFIG_DEFAULT  => $ENV{'HOME'}.'/.cif.yml',
+    DAYS            => 3,
 };
 
 my $help;
-my $remote          = REMOTE_DEFAULT();
-my $no_verify_ssl   = 0;
-my $timeout         = TIMEOUT_DEFAULT();
+my $remote                  = REMOTE_DEFAULT;
+my $no_verify_ssl           = 0;
+my $timeout                 = TIMEOUT_DEFAULT;
 my $token;
-my $format          = FORMAT_DEFAULT();
+my $format                  = FORMAT_DEFAULT;
 my $limit;
-my $debug           = 0;
-my $verbosity       = 0;
-my $config          = CONFIG_DEFAULT();
+my $debug                   = 0;
+my $verbosity               = 0;
+my $config                  = CONFIG_DEFAULT;
+my $days                    = DAYS;
+my $whitelist_confidence    = 25;
+my $whitelist_limit         = 50000;
 
 my $filters = {
 	confidence => 85,
@@ -48,21 +52,25 @@ my $filters = {
 
 Getopt::Long::Configure("bundling");
 GetOptions(
-    'help|h'            => \$help, 
-    'config|C=s'        => \$config,
-    'debug|d'           => \$debug,
-    'verbosity|v+'      => \$verbosity,
+    'help|h'                    => \$help, 
+    'config|C=s'                => \$config,
+    'debug|d'                   => \$debug,
+    'verbosity|v+'              => \$verbosity,
     
-    'remote|R=s'        => \$remote,
-    'token|T=s'         => \$token,
-    'groups|g=s'        => \$filters->{'group'},
-    'limit|l=i'         => \$filters->{'limit'},
-    'confidence|c=s'    => \$filters->{'confidence'},
-    'tags|t=s'          => \$filters->{'tags'},
-    'cc=s'              => \$filters->{'cc'},
-    'otype=s'           => \$filters->{'otype'},
-    'provider=s'       => \$filters->{'provider'},
-    'application=s'     => \$filters->{'application'},
+    'remote|R=s'                => \$remote,
+    'token|T=s'                 => \$token,
+    'groups|g=s'                => \$filters->{'group'},
+    'limit|l=i'                 => \$filters->{'limit'},
+    'confidence|c=s'            => \$filters->{'confidence'},
+    'tags|t=s'                  => \$filters->{'tags'},
+    'cc=s'                      => \$filters->{'cc'},
+    'otype=s'                   => \$filters->{'otype'},
+    'provider=s'                => \$filters->{'provider'},
+    'application=s'             => \$filters->{'application'},
+    'whitelist-confidence=i'    => \$whitelist_confidence,
+    'whitelist-limit=i'           => \$whitelist_limit,
+    
+    'days=i'                    => \$days,
     
     'no-verify-ssl'     => \$no_verify_ssl,
 ) or die(usage());
@@ -115,8 +123,12 @@ Filters:
     -g, --groups STRING         by groups (everyone,group1,group2, ...)
     --tags STRING,STRING        by tags (scanner,hijacked,botnet, ...)
     --cc=STRING,STRING          by country codes (RU,US, ...)
-    --otype=STRING,STRING      by observable type (ipv4,fqdn,url, ...)
-    --provider=STRING,STRING   by provider (spamhaus.org,dragonresearchgroup.org, ...)
+    --otype=STRING,STRING       by observable type (ipv4,fqdn,url, ...)
+    --provider=STRING,STRING    by provider (spamhaus.org,dragonresearchgroup.org, ...)
+    --days=INT                  number of days to go back (default: $days)
+    
+    --whitelist-confidence      default whitelist confidence filter (default: $whitelist_confidence)
+    --whitelist-limit           whitelist limit (default: $whitelist_limit)
     
 Advanced Options:
 
@@ -131,12 +143,15 @@ Advanced Options:
 EOF
 }
 
-my $plugin = CIF::SDK::FeedFactory->new_plugin({ otype => $filters->{'otype'} }) || croak('unknown otype');
-
 my @confidence_values = split(/,/,$filters->{'confidence'});
+my @otypes = split(/,/,$filters->{'otype'});
 
 my $timestamp = DateTime->from_epoch(epoch => time());
 $timestamp = $timestamp->ymd.'T'.$timestamp->hms().'Z';
+
+my $start = DateTime->from_epoch(epoch => time(), time_zone => 'UTC')->subtract(days => $days).'Z';
+$filters->{'reporttime'} = $start;
+$filters->{'reporttimeend'} = DateTime->from_epoch(epoch => time(), time_zone => 'UTC').'Z';
 
 $Logger->info('starting up client...');
 my $cli = CIF::SDK::Client->new({
@@ -144,51 +159,67 @@ my $cli = CIF::SDK::Client->new({
     remote      => $remote,
     timeout     => $timeout,
     verify_ssl  => ($no_verify_ssl) ? 0 : 1,
+    nowait      => 1,
 });
 
-$Logger->debug('pulling '.$filters->{'otype'}.' whitelist');
+foreach my $otype (@otypes){
+    $Logger->debug('pulling '.$otype.' whitelist');
 
-my ($ret,$err) = $cli->search({
-	otype      => $filters->{'otype'},
-	tags       => 'whitelist',
-	confidence => 25, # TODO -- arbitrary
-	limit      => $filters->{'limit'},
-});
-
-croak($err) if($err);
-
-my $whitelist = $ret;
-
-my $num_whitelist = ($#{$whitelist} + 1);
-
-$Logger->debug('got whitelist ['.$num_whitelist.']... grabbing requested dataset...');
-
-foreach my $confidence (@confidence_values){
-    $filters->{'confidence'} = $confidence;
-    $ret = -1;
-    ($ret,$err) = $cli->search($filters);
-
-    my $num_ret = ($#{$ret} + 1);
-    $Logger->debug('got data-set: '.$num_ret.' generating feed');
-    
-    my $data = $plugin->process({
-    	data       => $ret,
-    	whitelist  => $whitelist,
+    my ($ret,$err) = $cli->search({
+    	otype          => $otype,
+    	tags           => 'whitelist',
+    	confidence     => 25,
+    	limit          => $whitelist_limit,
+    	reporttime     => $filters->{'reporttime'},
+    	reporttimeend  => $filters->{'reporttimeend'},
     });
-    	
-    $Logger->debug('pushing results back to router');
     
-    ($err,$ret) = $cli->submit_feed({
-    	Observables	   => $data,
-        tags    	   => $filters->{'tags'},
-    	otype          => $filters->{'otype'},
-    	reporttime 	   => $timestamp,
-    	tlp            => $filters->{'tlp'},
-    	group          => $filters->{'group'},
-    	confidence     => $confidence,
-    	cc             => $filters->{'cc'},
-    	provider       => $filters->{'provider'},
-    });
+    if($err){
+        $Logger->error($err);
+        exit(-1);
+    }
+    
+    my $whitelist = $ret;
+    
+    my $num_whitelist = ($#{$whitelist} + 1);
+    
+    $Logger->debug('got whitelist ['.$num_whitelist.']... grabbing requested dataset...');
+    my $plugin = CIF::SDK::FeedFactory->new_plugin({ otype => $otype }) || croak('unknown otype');
+    
+    $filters->{'otype'} = $otype;
+    foreach my $confidence (@confidence_values){
+        $filters->{'confidence'} = $confidence;
+        $ret = -1;
+        ($ret,$err) = $cli->search($filters);
+    
+        my $num_ret = ($#{$ret} + 1);
+        $Logger->debug('got data-set: '.$num_ret.' generating feed');
+        
+        my $data = $plugin->process({
+        	data       => $ret,
+        	whitelist  => $whitelist,
+        });
+        	
+        $Logger->debug('pushing results back to router');
+        
+        ($ret,$err) = $cli->submit_feed({
+        	Observables	   => $data,
+            tags    	   => $filters->{'tags'},
+        	otype          => $otype,
+        	reporttime 	   => $timestamp,
+        	tlp            => $filters->{'tlp'},
+        	group          => $filters->{'group'},
+        	confidence     => $confidence,
+        	cc             => $filters->{'cc'},
+        	provider       => $filters->{'provider'},
+        });
+        
+        if($err){
+            $Logger->error($err);
+            exit(-1);
+        }
+        $Logger->info($ret);
+    }
 }
 
 $Logger->info('done...');

@@ -51,7 +51,7 @@ use constant {
         'Content-Type'  => 'application/json',
     },
     AGENT   => 'cif-sdk-perl/'.$CIF::SDK::VERSION,
-    TIMEOUT => 300,
+    TIMEOUT => 1,
     REMOTE  => 'https://localhost',
 };
 
@@ -242,7 +242,6 @@ sub search {
     my $resp = $self->_make_request('observables',$args);
 
     unless($resp->{'status'} eq '200'){
-        $Logger->warn($resp->{'content'}->{'message'});
         return undef, $resp->{'content'}->{'message'};
     }
     return $resp->{'content'};
@@ -305,6 +304,9 @@ sub submit_feed {
 	    $Logger->warn($resp->{'content'}->{'message'});
         return undef, $resp->{'content'}->{'message'};
     }
+    if($resp->{'content'}->{'message'}){
+        return $resp->{'content'}->{'message'};
+    }
     return $resp->{'content'};
 };
 
@@ -312,6 +314,7 @@ sub submit {
 	my $self = shift;
 	my $args = shift;
     my $resp = $self->_submit('observables',$args);
+    
     unless($resp->{'status'} eq '201' || $resp->{'status'} eq '200'){
         $Logger->warn($resp->{'content'}->{'message'});
         return undef, $resp->{'content'}->{'message'};
@@ -343,12 +346,11 @@ sub _submit {
     my $resp = $self->handle->request('PUT',$uri,{ content => $args });
     
     unless($resp->{'status'} < 399){
-        $Logger->warn('status: '.$resp->{'status'}.' -- '.$resp->{'reason'});
         $Logger->info($resp->{'content'});
+    } else {
+        $Logger->debug('decoding response..');
+        $resp->{'content'} = decode_json($resp->{'content'});
     }
-    $Logger->debug('decoding response..');
-    $resp->{'content'} = decode_json($resp->{'content'});
-    
     return $resp;
 }	
 
