@@ -23,14 +23,18 @@ sub process {
    
     ## TODO -- finish (compare whitelist)
    
-    map { $_ = URI->new($_)->canonical(); } @{$args->{'data'}};
-    map { $_ = URI->new($_)->canonical(); } @{$args->{'whitelist'}};
+    map { $_ = lc(URI->new($_->{'observable'})->canonical->as_string); } @{$args->{'data'}};
+    map { $_ = lc(URI->new($_->{'observable'})->canonical->as_string); } @{$args->{'whitelist'}};
    
     my @list;
     
-#    foreach (@{$args->{'data'}}){
-#        push(@list,$_);
-#    }
+    foreach my $u (@{$args->{'data'}}){
+        my $found = 0;
+        foreach my $w (@{$args->{'whitelist'}}){
+            $found = 1 if($w eq $u);
+        }
+        push(@list,$u) unless($found)
+    }
     return \@list
 }
 

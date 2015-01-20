@@ -41,7 +41,7 @@ sub process {
     
     my $whitelist = Net::DNS::Match->new();
     $whitelist->add(\@perm_whitelist) unless($args->{'noperm'});
-    $whitelist->add($args->{'whitelist'}); ## TODO array or observables?
+    $whitelist->add($args->{'whitelist'});
     
     my @list;
     
