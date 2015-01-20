@@ -1,5 +1,10 @@
 Revision history for CIF-SDK
 
+0.00_16 - 2015-01-
+    - improvements to cif-feed
+        - cleaned up url feed generation
+        - added ?nowait flag
+
 0.00_15 - 2014-12-23
     - fix to default columns in Format.pm
 
