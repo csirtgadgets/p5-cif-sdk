@@ -21,16 +21,15 @@ sub process {
     my $self = shift;
     my $args = shift;
    
-    ## TODO -- finish (compare whitelist)
-   
+    my @wl = @{$args->{'whitelist'}};
     map { $_ = lc(URI->new($_->{'observable'})->canonical->as_string); } @{$args->{'data'}};
-    map { $_ = lc(URI->new($_->{'observable'})->canonical->as_string); } @{$args->{'whitelist'}};
+    map { $_ = lc(URI->new($_->{'observable'})->canonical->as_string); } @wl;
    
     my @list;
     
     foreach my $u (@{$args->{'data'}}){
         my $found = 0;
-        foreach my $w (@{$args->{'whitelist'}}){
+        foreach my $w (@wl){
             $found = 1 if($w eq $u);
         }
         push(@list,$u) unless($found)
