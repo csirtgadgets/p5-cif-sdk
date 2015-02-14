@@ -10,6 +10,7 @@ use JSON::XS qw(encode_json decode_json);
 use Time::HiRes qw(tv_interval gettimeofday);
 use Carp;
 use Data::Dumper;
+use MIME::Base64 qw/encode_base64 decode_base64/;
 
 =head1 NAME
 
@@ -299,15 +300,14 @@ sub submit_feed {
 	my $self = shift;
 	my $args = shift;
 	
+	$args->{'Observables'} = encode_json($args->{'Observables'});
+
 	my $resp = $self->_submit('feeds',$args);
 	unless($resp->{'status'} eq '200' or $resp->{'status'} eq '201'){
 	    $Logger->warn($resp->{'content'}->{'message'});
         return undef, $resp->{'content'}->{'message'};
     }
-    if($resp->{'content'}->{'message'}){
-        return $resp->{'content'}->{'message'};
-    }
-    return $resp->{'content'};
+    return $resp->{'content'}[0];
 };
 
 sub submit {
@@ -334,7 +334,7 @@ sub _submit {
     $Logger->debug('encoding args...');
     
     $args = encode_json($args);
-
+    
     $uri = $self->remote.'/'.$uri;
     
     if($self->nowait){

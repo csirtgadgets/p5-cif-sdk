@@ -159,7 +159,7 @@ my $cli = CIF::SDK::Client->new({
     remote      => $remote,
     timeout     => $timeout,
     verify_ssl  => ($no_verify_ssl) ? 0 : 1,
-    nowait      => 1,
+    #nowait      => 1,
 });
 
 foreach my $otype (@otypes){
