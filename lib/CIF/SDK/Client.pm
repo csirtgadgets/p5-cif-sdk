@@ -304,9 +304,10 @@ sub submit_feed {
 
 	my $resp = $self->_submit('feeds',$args);
 	unless($resp->{'status'} eq '200' or $resp->{'status'} eq '201'){
-	    $Logger->warn($resp->{'content'}->{'message'});
-        return undef, $resp->{'content'}->{'message'};
-    }
+	    my $err = $resp->{'status'}.': '.$resp->{'reason'};
+        $Logger->warn($err);
+        return undef, $err;
+	}
     return $resp->{'content'}->{'message'};
 };
 
@@ -349,8 +350,8 @@ sub _submit {
     $Logger->debug('making request...');
     my $resp = $self->handle->request('PUT',$uri,{ content => $args });
     
-    unless($resp->{'status'} < 399){
-        $Logger->info($resp->{'content'});
+    unless($resp->{'status'} lt 399){
+        $Logger->info($resp->{'reason'});
     } else {
         $Logger->debug('decoding response..');
         $resp->{'content'} = decode_json($resp->{'content'});
