@@ -307,7 +307,7 @@ sub submit_feed {
 	    $Logger->warn($resp->{'content'}->{'message'});
         return undef, $resp->{'content'}->{'message'};
     }
-    return $resp->{'content'}[0];
+    return $resp->{'content'}->{'message'};
 };
 
 sub submit {
