@@ -316,8 +316,12 @@ sub submit {
     my $resp = $self->_submit('observables',$args);
     
     unless($resp->{'status'} eq '201' || $resp->{'status'} eq '200'){
-        $Logger->warn($resp->{'content'}->{'message'});
-        return undef, $resp->{'content'}->{'message'};
+        my $err = 'status: '.$resp->{'status'};
+        if(exists($resp->{'content'}->{'message'})){
+            $err = $resp->{'content'}->{'message'};
+        }
+        $Logger->warn($err);
+        return undef, $err;
     }
     return $resp->{'content'};
 }
