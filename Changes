@@ -1,5 +1,8 @@
 Revision history for CIF-SDK
 
+0.00_16 - 2015-02-24
+    - improvements to cif-feed, Client.pm error messages
+
 0.00_16 - 2015-01-20
     - improvements to cif-feed
         - cleaned up url feed generation
