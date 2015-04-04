@@ -172,6 +172,9 @@ sub _make_request {
     if($resp->{'headers'}->{'content-type'} =~ /^application\/json$/){
         $Logger->debug('decoding content..');
         $resp->{'content'} = decode_json($resp->{'content'});
+        if ($resp->{'status'} eq '422'){
+            $resp->{'content'} = {"message" => "invalid request" };
+        }
     } else {
         if($resp->{'status'} eq '404'){
             $resp->{'content'} = { message => 'uri not found: '.$uri };
