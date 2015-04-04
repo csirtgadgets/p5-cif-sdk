@@ -3,6 +3,7 @@ Revision history for CIF-SDK
 0.00_17 - 2015-04-04
     - fixes:
         https://github.com/csirtgadgets/p5-cif-sdk/issues/15
+        https://github.com/csirtgadgets/p5-cif-sdk/issues/16
 
 0.00_16 - 2015-02-24
     - improvements to cif-feed, Client.pm error messages
