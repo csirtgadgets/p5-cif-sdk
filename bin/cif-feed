@@ -159,27 +159,32 @@ my $cli = CIF::SDK::Client->new({
     remote      => $remote,
     timeout     => $timeout,
     verify_ssl  => ($no_verify_ssl) ? 0 : 1,
-    #nowait      => 1,
 });
 
-foreach my $otype (@otypes){
-    $Logger->debug('pulling '.$otype.' whitelist');
+my $wl = {};
 
-    my ($ret,$err) = $cli->search({
-    	otype          => $otype,
-    	tags           => 'whitelist',
-    	confidence     => 25,
-    	limit          => $whitelist_limit,
-    	reporttime     => $filters->{'reporttime'},
-    	reporttimeend  => $filters->{'reporttimeend'},
-    });
+foreach my $otype (@otypes){
+    my ($ret,$err);
+    unless(defined($wl->{$otype})){
+        $Logger->debug('pulling '.$otype.' whitelist');
     
-    if($err){
-        $Logger->error($err);
-        exit(-1);
+        ($ret,$err) = $cli->search({
+        	otype          => $otype,
+        	tags           => 'whitelist',
+        	confidence     => 25,
+        	limit          => $whitelist_limit,
+        	reporttime     => $filters->{'reporttime'},
+        	reporttimeend  => $filters->{'reporttimeend'},
+        });
+        
+        if($err){
+            $Logger->error($err);
+            exit(-1);
+        }
+        $wl->{$otype} = $ret;
     }
     
-    my $whitelist = $ret;
+    my $whitelist = $wl->{$otype};
     
     my $num_whitelist = ($#{$whitelist} + 1);
     
