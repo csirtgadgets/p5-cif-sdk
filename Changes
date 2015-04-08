@@ -1,5 +1,9 @@
 Revision history for CIF-SDK
 
+0.00_18 - 2015-04
+    - fixes:
+        https://github.com/csirtgadgets/p5-cif-sdk/issues/18
+
 0.00_17 - 2015-04-04
     - fixes:
         https://github.com/csirtgadgets/p5-cif-sdk/issues/15

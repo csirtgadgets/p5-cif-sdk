@@ -68,6 +68,7 @@ GetOptions(
     'otype=s'             => \$filters->{'otype'},
     'provider=s'          => \$filters->{'provider'},
     'rdata=s'             => \$filters->{'rdata'},
+    'firsttime=s'        => \$filters->{'firsttime'},
     'lasttime=s'          => \$filters->{'lasttime'},
     'reporttime=s'        => \$filters->{'reporttime'},
     'reporttime-end=s'    => \$filters->{'reporttimeend'},
