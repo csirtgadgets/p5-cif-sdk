@@ -43,6 +43,7 @@ my $sortby_direction  = 'asc';
 my $aggregate;
 my $today;
 my $lasthour;
+my $lastday;
 
 my $filters;
 
@@ -80,6 +81,7 @@ GetOptions(
     
     'today'               => \$today,
     'last-hour'           => \$lasthour,
+    'last-day'              => \$lastday,
     
     'no-verify-ssl'       => \$no_verify_ssl,
     
@@ -147,6 +149,12 @@ if($lasthour){
     $filters->{'reporttimeend'} = $dt->ymd().'T'.$dt->hour.':59:59Z';
 }
 
+if($lastday){
+    my $dt = DateTime->from_epoch(epoch => time());
+    $filters->{'reporttime'} = DateTime->now()->subtract(hours => 23, minutes => 59, seconds => 59);
+    $filters->{'reporttime'} = $filters->{'reporttime'}->ymd().'T'.$filters->{'reporttime'}->hms().'Z';
+    $filters->{'reporttimeend'} = $dt->ymd().'T'.$dt->hms().'Z';
+}
 sub usage {
     return <<EOF;
 
@@ -156,7 +164,7 @@ Options:
 
     -q, --query=STRING          specify a search
     --id STRING                 specify an id to retrieve
-    -f, --format=FORMAT         specify the output format, default: $format
+    -f, --format=FORMAT         specify the output format (Table, CSV, Json, Snort, Bro, default: $format)
     -l, --limit=INT             specify a return limit (default set at router)
     -s, --submit                submit data via STDIN (json keypairs)
     
@@ -178,15 +186,18 @@ Filters:
     --application=STRING        filter baesd on the application field
     --rdata=STRING              by rdata
     --group=STRING              by groups (everyone,group1,group2, ...)
-    --lasttime STRING           specify filter based on lasttime timestmap (less than)
-    --firsttime STRING          specify filter based on firsttime timestmap (greater than)
-    --reporttime STRING         specify filter based on reporttime timestmap (greater than)
-    --reporttime-end STRING     specify filter based on reporttime timestmap (less than)
+    --lasttime STRING           specify filter based on lasttime timestmap (less than, format: YYYY-MM-DDTHH:MM:SSZ)
+    --firsttime STRING          specify filter based on firsttime timestmap (greater than, format: YYYY-MM-DDTHH:MM:SSZ)
+    --reporttime STRING         specify filter based on reporttime timestmap (greater than, format: YYYY-MM-DDTHH:MM:SSZ)
+    --reporttime-end STRING     specify filter based on reporttime timestmap (less than, format: YYYY-MM-DDTHH:MM:SSZ)
     
     --today                     auto-sets reporttime to today, 00:00:00Z (UTC)
     
     --last-hour                 auto-sets reporttime to the beginning of the previous full hour
-                                and reporttimeend to end of previous full hour
+                                and reporttime-end to end of previous full hour
+                                
+    --last-day                  auto-sets reporttime to 23 hours and 59 seconds ago (current time UTC)
+                                and reporttime-end to "now"
 
     
 Advanced Options:
