@@ -220,7 +220,11 @@ Ping Options:
     --ttl=INT                   specify number of pings to send, default: $ping_ttl
                                 (0 infinate, halt with SIGINT or CTRL+C)
  Examples:
-    $0 -q example.com -v
+    $0 cif -q 130.201.0.2
+    $0 cif -q 130.201.0.0/16
+    $0 cif -q 2001:4860:4860::8888
+    
+    $0 -q example.com
     $0 --tags botnet,zeus -c 85
     $0 --application vnc,ssh --asns 1234 --cc RU,US
     $0 -q example.com --tags botnet,zeus -c 85 --limit 50
