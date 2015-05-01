@@ -63,6 +63,7 @@ GetOptions(
     'limit|l=i'           => \$filters->{'limit'},
     'confidence|c=i'      => \$filters->{'confidence'},
     'tags|t=s'            => \$filters->{'tags'},
+    'description=s'       => \$filters->{'description'},
     'cc=s'                => \$filters->{'cc'},
     'application=s'       => \$filters->{'application'},
     'asn=s'               => \$filters->{'asn'},
@@ -179,6 +180,7 @@ Filters:
     -l, --limit=STRINT          <to do>
     -n, --nolog                 do not log the query
     --tags=STRING,STRING        by tags (scanner,hijacked,botnet, ...)
+    --description=STRING        by description
     --cc=STRING,STRING          by country codes (RU,US, ...)
     --asn=INT,INT               by asns (1234,2445, ...)
     --otype=STRING,STRING       by observable type (ipv4,fqdn,url, ...)
