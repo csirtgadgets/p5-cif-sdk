@@ -34,7 +34,9 @@ sub process {
     
     
     foreach my $d (@$data){
-        
+        if($d->{'otype'} eq 'url'){
+            $d->{'observable'} =~ s/^https?:\/\///g; # https://github.com/csirtgadgets/p5-cif-sdk/issues/19
+        }
         my @array;
         foreach my $c (('observable','otype','tags','confidence','provider')){
             
