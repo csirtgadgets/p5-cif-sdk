@@ -1,5 +1,9 @@
 Revision history for CIF-SDK
 
+0.00_20   2015-05-11
+    - fixes:
+        https://github.com/csirtgadgets/p5-cif-sdk/issues/25
+
 0.00_19   2015-05-01
     - fixes:
         - added support for description field

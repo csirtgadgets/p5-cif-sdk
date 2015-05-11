@@ -168,8 +168,8 @@ sub _make_request {
     my $resp = $self->handle->request('GET',$uri,$params);
     
     $Logger->info('status: '.$resp->{'status'});
-    
-    if($resp->{'headers'}->{'content-type'} =~ /^application\/json$/){
+
+    if($resp->{'headers'}->{'content-type'} && $resp->{'headers'}->{'content-type'} =~ /^application\/json$/){
         $Logger->debug('decoding content..');
         $resp->{'content'} = decode_json($resp->{'content'});
         if ($resp->{'status'} eq '422'){
@@ -178,8 +178,11 @@ sub _make_request {
     } else {
         if($resp->{'status'} eq '404'){
             $resp->{'content'} = { message => 'uri not found: '.$uri };
-        } else {
+        } elsif($resp->{'content'} && $resp->{'content'} ne '') {
             $resp->{'content'} = { message => $resp->{'content'} };
+        } else {
+            $resp->{'status'} = 404;
+            $resp->{'content'} = { message => 'invalid request, check server api version' };
         }
     }
     return $resp;
