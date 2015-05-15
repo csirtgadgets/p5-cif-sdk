@@ -12,6 +12,7 @@ use warnings FATAL => 'all';
 use CIF::SDK qw/init_logging $Logger parse_config/;
 use CIF::SDK::Client;
 use CIF::SDK::FormatFactory;
+use CIF::SDK::FeedFactory;
 use Getopt::Long;
 use Carp;
 use Data::Dumper;
@@ -44,6 +45,8 @@ my $aggregate;
 my $today;
 my $lasthour;
 my $lastday;
+my $whitelist_confidence;
+my $whitelist_limit;
 
 my $filters;
 
@@ -74,7 +77,9 @@ GetOptions(
     'lasttime=s'          => \$filters->{'lasttime'},
     'reporttime=s'        => \$filters->{'reporttime'},
     'reporttime-end=s'    => \$filters->{'reporttimeend'},
-    'feed'                => \$feed,
+    
+    'whitelist-confidence=i'    => \$whitelist_confidence,
+    'whitelist-limit=i'         => \$whitelist_limit,
     
     'sortby=s'            => \$sortby,
     'sortby-direction=s'  => \$sortby_direction,
@@ -200,6 +205,10 @@ Filters:
                                 
     --last-day                  auto-sets reporttime to 23 hours and 59 seconds ago (current time UTC)
                                 and reporttime-end to "now"
+    
+    --days                      number of days to go back
+    --whitelist-confidence
+    --whitelist-limit
 
     
 Advanced Options:
@@ -236,8 +245,6 @@ Ping Options:
 EOF
 }
 
-
-
 $Logger->info('starting up client...');
 my $cli = CIF::SDK::Client->new({
     token       => $token,
@@ -267,11 +274,7 @@ if($ping){
     }
 } elsif($filters){
     $Logger->info('running search...');
-    if($feed){
-        ($ret,$err) = $cli->search_feed($filters);
-    } else {
-        ($ret,$err) = $cli->search($filters);
-    }
+    ($ret,$err) = $cli->search($filters);
     
     croak($err) if($err);
     unless($#{$ret} > -1){
@@ -280,12 +283,57 @@ if($ping){
         exit(0);
     }
     
+    my $data = $ret;
+    $ret = undef;
+    
+    if($whitelist_confidence){
+        my $otype = $filters->{'otype'};
+        croak('--otype is required') unless($otype);
+        $Logger->debug('pulling '.$otype.' whitelist');
+    
+        ($ret,$err) = $cli->search({
+        	otype          => $otype,
+        	tags           => 'whitelist',
+        	confidence     => $whitelist_confidence,
+        	limit          => $whitelist_limit,
+        	reporttime     => $filters->{'reporttime'},
+        	reporttimeend  => $filters->{'reporttimeend'},
+        });
+        
+        if($err){
+            $Logger->error($err);
+            exit(-1);
+        }
+        
+        my $wl = {};
+        
+        $wl->{$otype} = $ret;
+        my $whitelist = $wl->{$otype};
+        
+        my $num_whitelist = ($#{$whitelist} + 1);
+        
+        $Logger->debug('got whitelist ['.$num_whitelist.']... grabbing requested dataset...');
+        my $plugin = CIF::SDK::FeedFactory->new_plugin({ otype => $otype }) || croak('unknown otype');    
+        
+        $Logger->debug("aggregating...");
+        $data = $cli->aggregate({
+            data        => $data,
+            aggregate   => 'observable',
+        });
+        
+        $Logger->debug("applying whitelist...");
+        $data = $plugin->process({
+            data        => $data,
+            whitelist   => $whitelist
+        });
+    }
+    
     $Logger->info('search returned, formatting..');
     
-    unless(@{$ret}[0]->{$sortby}){
+    unless(@{$data}[0]->{$sortby}){
         $Logger->error('sort-by field: '.$sortby.' is not consistent in this data-set...');
         $Logger->info('trying: sortby reporttime');
-        unless(@{$ret}[0]->{'reporttime'}){
+        unless(@{$data}[0]->{'reporttime'}){
             $Logger->error("sort-by field: 'reporttime' does not exist in this data-set...");
             croak();
         }
@@ -293,15 +341,15 @@ if($ping){
     }
     
     if(lc($sortby_direction) eq 'asc'){
-        $ret = [ sort { $a->{$sortby} cmp $b->{$sortby} } @$ret ];
+        $data = [ sort { $a->{$sortby} cmp $b->{$sortby} } @$data ];
     } else {
-        $ret = [ sort { $b->{$sortby} cmp $a->{$sortby} } @$ret ];
+        $data = [ sort { $b->{$sortby} cmp $a->{$sortby} } @$data ];
     }
     
     if($aggregate){
         $Logger->info('aggregating...');
         $ret = $cli->aggregate({
-            data        => $ret,
+            data        => $data,
             aggregate   => $aggregate,
         });
     }
@@ -309,7 +357,7 @@ if($ping){
     my $formatter = CIF::SDK::FormatFactory->new_plugin({ 
         format => $format, 
     });
-    my $text = $formatter->process($ret);
+    my $text = $formatter->process($data);
     print $text."\n";
 }
 $Logger->info('done...');
