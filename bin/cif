@@ -273,9 +273,11 @@ if($ping){
     }
 } elsif($submit){
     ($ret,$err) = $cli->submit($submit);
-    print $ret[1] if($ret);
-    die($err) if($err);
-    
+    if($err){
+        $Logger->warn($err);
+    } else {
+        $Logger->info("submitted: ".@{$ret}[0]);
+    }
 } elsif($filters){
     $Logger->info('running search...');
     ($ret,$err) = $cli->search($filters);
