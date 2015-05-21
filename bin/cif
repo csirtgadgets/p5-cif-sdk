@@ -273,8 +273,8 @@ if($ping){
     }
 } elsif($submit){
     ($ret,$err) = $cli->submit($submit);
-    die Dumper($ret);
-    
+    print $ret[1] if($ret);
+    die($err) if($err);
     
 } elsif($filters){
     $Logger->info('running search...');
