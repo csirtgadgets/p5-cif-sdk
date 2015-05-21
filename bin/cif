@@ -17,6 +17,7 @@ use Getopt::Long;
 use Carp;
 use Data::Dumper;
 use DateTime;
+use JSON::XS qw(encode_json decode_json);
 
 use constant {
     REMOTE  => 'https://localhost',
@@ -270,6 +271,11 @@ if($ping){
             $d = 1;
         }
     }
+} elsif($submit){
+    ($ret,$err) = $cli->submit($submit);
+    die Dumper($ret);
+    
+    
 } elsif($filters){
     $Logger->info('running search...');
     ($ret,$err) = $cli->search($filters);
