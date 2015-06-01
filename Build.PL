@@ -8,6 +8,7 @@ my $builder = Module::Build->new(
     license             => 'LGPL_3_0',
     dist_author         => q{Wes Young <wes@barely3am.com>},
     dist_version_from   => 'lib/CIF/SDK.pm',
+    version_from        => 'lib/CIF/SDK.pm',
     script_files        => ['bin/cif','bin/cif-feed'],
     configure_requires => {
         'Module::Build' => 0,
