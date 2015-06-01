@@ -10,7 +10,7 @@ WriteMakefile(
     ABSTRACT_FROM    => 'lib/CIF/SDK.pm',
     VERSION_FROM    => 'lib/CIF/SDK.pm',
     LICENSE          => 'LGPL_3',
-    PL_FILES         => { 'bin/cif' => 'bin/cif' },
+    EXE_FILES       => ['bin/cif'],
     MIN_PERL_VERSION => 5.014,
     CONFIGURE_REQUIRES => {
         'ExtUtils::MakeMaker' => 0,
@@ -21,6 +21,7 @@ WriteMakefile(
     PREREQ_PM => {
         #'ABC'              => 1.6,
         #'Foo::Bar::Module' => 5.0401,
+        'DateTime'              => 0,
         'Net::DNS::Match'       => '0.05',
         'Net::Patricia'         => '1.22',
         'Mouse'                 => '2.00300',
