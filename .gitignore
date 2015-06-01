@@ -2,7 +2,6 @@ _Inline
 Build
 META.*
 *.old
-Makefile.PL
 *.swp
 _build
 .includepath
