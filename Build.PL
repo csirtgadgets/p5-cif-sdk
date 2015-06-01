@@ -5,7 +5,7 @@ use Module::Build;
 
 my $builder = Module::Build->new(
     module_name         => 'CIF::SDK',
-    license             => 'LGPL_3_0',
+    license             => 'lgpl3',
     dist_author         => q{Wes Young <wes@barely3am.com>},
     dist_version_from   => 'lib/CIF/SDK.pm',
     version_from        => 'lib/CIF/SDK.pm',
