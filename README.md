@@ -8,16 +8,7 @@ We highly recomend using Ubuntu 14.04 LTS.
 ## Ubuntu 14
  ```
  sudo apt-get install -y git build-essential cpanminus libmodule-install-perl
- sudo cpanm http://backpan.perl.org/authors/id/M/MS/MSCHILLI/Log-Log4perl-1.44.tar.gz 
- sudo cpanm git://github.com/csirtgadgets/p5-cif-sdk.git
- ```
-
-## Ubuntu 12
- ```
- sudo apt-get install -y git build-essential cpanminus libmodule-install-perl
- cpanm --self-upgrade --mirror http://cpan.metacpan.org
- sudo cpanm http://backpan.perl.org/authors/id/M/MS/MSCHILLI/Log-Log4perl-1.44.tar.gz
- sudo cpanm git://github.com/csirtgadgets/p5-cif-sdk.git
+ sudo cpanm http://backpan.perl.org/authors/id/M/MS/MSCHILLI/Log-Log4perl-1.44.tar.gz git://github.com/csirtgadgets/p5-cif-sdk.git 
  ```
 
 # Examples
@@ -32,8 +23,6 @@ We highly recomend using Ubuntu 14.04 LTS.
 ### Running
   ```bash
   $ cif --token 1234 --remote 'https://localhost' -q example.com
-  $ cif-feed --confidence 65 --tags malware,botnet --otype fqdn # requires a --write enabled token
-  $ cif-feed --confidence 85 --tags hijacked --otype ipv4
   ```
   
 ## API
@@ -95,7 +84,7 @@ You can also look for information at the [GitHub repo](https://github.com/csirtg
 
 # License and Copyright
 
-Copyright (C) 2014 [the CSIRT Gadgets Foundation](http://csirtgadgets.org)
+Copyright (C) 2015 [the CSIRT Gadgets Foundation](http://csirtgadgets.org)
 
 Free use of this software is granted under the terms of the [GNU Lesser General Public License](https://www.gnu.org/licenses/lgpl.html) (LGPL v3.0). For details see the file ``LICENSE`` included with the distribution.
 
