@@ -141,7 +141,7 @@ if($submit){
     $submit = [];
     while(<STDIN>){
         chomp();
-        push(@$submit,decode_json($_));
+        push(@$submit,decode_json(lc($_)));
     }
 }
 
