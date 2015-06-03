@@ -282,6 +282,9 @@ if($ping){
     $Logger->info('running search...');
     ($ret,$err) = $cli->search($filters);
     
+    use Data::Dumper;
+    warn Dumper($ret);
+    
     croak($err) if($err);
     unless($#{$ret} > -1){
         $Logger->info('no results found...');

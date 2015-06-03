@@ -2,6 +2,7 @@ Revision history for CIF-SDK
 
 0.00_22	- 2015-06-03
     - adds html formatter output
+    - fixes: https://github.com/csirtgadgets/p5-cif-sdk/issues/29
 
 0.00_21 - 2015-05-21
     - fixes:

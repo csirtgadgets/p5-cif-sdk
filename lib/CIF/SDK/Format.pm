@@ -8,7 +8,7 @@ use Mouse::Role;
 requires qw/understands process/;
 
 use constant DEFAULT_COLS   => [ 
-    'tlp','group','reporttime','observable','cc','asn','geolocation','confidence','tags','rdata','provider','application', 'description'
+    'tlp','group','reporttime','observable','cc','asn','confidence','tags','description','rdata','provider','altid_tlp', 'altid'
 ];
 
 has 'columns'   => (
