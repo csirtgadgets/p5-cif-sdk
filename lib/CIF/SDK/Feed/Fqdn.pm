@@ -46,11 +46,15 @@ sub process {
     my @list;
     
     foreach (@{$args->{'data'}}){
+        next if($self->_tag_contains_whitelist($_->{'tags'}));
         next if($whitelist->match($_->{'observable'}));
         push(@list,$_);
     }
     return \@list
 }
+
+
+    
 
 __PACKAGE__->meta()->make_immutable();
 

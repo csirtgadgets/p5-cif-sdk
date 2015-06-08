@@ -39,6 +39,7 @@ sub process {
 	my @list;
 	
 	foreach (@{$args->{'data'}}){
+	    next if($self->_tag_contains_whitelist($_->{'tags'}));
 	   	next if($whitelist->match_string($_->{'observable'}));
 	   	push(@list,$_);
 	}

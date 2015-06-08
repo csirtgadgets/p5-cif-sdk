@@ -19,4 +19,16 @@ has [qw(otype confidence group tags tlp)] => (
     is  => 'ro',
 );
 
+sub _tag_contains_whitelist {
+    my $self = shift;
+    my $tags = shift;
+    
+    return 0 unless($tags);
+    
+    foreach (@$tags){
+        return 1 if $_ eq 'whitelist'
+    }
+    return 0;
+}
+
 1;

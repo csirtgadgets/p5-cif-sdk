@@ -326,16 +326,17 @@ if($ping){
             data        => $data,
             aggregate   => 'observable',
         });
-        
+
         $Logger->debug("applying whitelist...");
         $data = $plugin->process({
             data        => $data,
             whitelist   => $whitelist
         });
+        
     }
     
     $Logger->info('search returned, formatting..');
-    
+
     unless(@{$data}[0]->{$sortby}){
         $Logger->error('sort-by field: '.$sortby.' is not consistent in this data-set...');
         $Logger->info('trying: sortby reporttime');

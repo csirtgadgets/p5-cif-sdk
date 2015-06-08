@@ -22,13 +22,14 @@ sub process {
     my $args = shift;
    
     my @wl = @{$args->{'whitelist'}};
-    map { $_ = lc(URI->new($_->{'observable'})->canonical->as_string); } @{$args->{'data'}};
+    map { $_->{'observable'} = lc(URI->new($_->{'observable'})->canonical->as_string); } @{$args->{'data'}};
     map { $_ = lc(URI->new($_->{'observable'})->canonical->as_string); } @wl;
    
     my @list;
     
     foreach my $u (@{$args->{'data'}}){
         my $found = 0;
+        next if($self->_tag_contains_whitelist($u->{'tags'}));
         foreach my $w (@wl){
             $found = 1 if($w eq $u);
         }
