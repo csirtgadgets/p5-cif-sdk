@@ -324,10 +324,9 @@ sub submit {
     
     unless($resp->{'status'} eq '201' || $resp->{'status'} eq '200'){
         my $err = 'status: '.$resp->{'status'};
-        if(exists($resp->{'content'}->{'message'})){
+        if($resp->{'content'} eq '' && $resp->{'content'}->{'message'}){
             $err = $resp->{'content'}->{'message'};
         }
-        $Logger->warn($err);
         return undef, $err;
     }
     return $resp->{'content'};
