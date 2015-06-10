@@ -15,7 +15,9 @@ use Data::Dumper;
 use constant type_hash => {
     'ipv4'  => 'ADDR',
     'url'   => 'URL',
-    'fqdn'  => 'DOMAIN'
+    'fqdn'  => 'DOMAIN',
+    'email' => 'EMAIL',
+    'hash'  => 'FILE_HASH',
 };
     
 sub understands {
@@ -39,10 +41,11 @@ sub process {
         }
         my @array;
         foreach my $c (('observable','otype','tags','confidence','provider')){
-            
             my $x = $d->{$c} || '-';
             if($c eq 'otype'){
-                $x = 'Intel::'.type_hash->{$d->{$c}};
+                if(type_hash->{$d->{$c}}){
+                    $x = 'Intel::'.type_hash->{$d->{$c}};
+                }
             }
             $x = join('|',@$x) if(ref($x) eq 'ARRAY');
             push(@array,$x);
