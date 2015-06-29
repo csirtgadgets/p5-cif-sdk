@@ -28,7 +28,7 @@ sub process {
     my $self = shift;
     my $args = shift;
     
-    my $whitelist = Net::Patricia->new();
+    my $whitelist = new Net::Patricia AF_INET6;
     $whitelist->add_string($_) foreach @perm_whitelist;
     $whitelist->add_string($_) foreach (@{$args->{'whitelist'}});
     
