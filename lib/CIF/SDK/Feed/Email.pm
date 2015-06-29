@@ -21,17 +21,16 @@ sub process {
     my $self = shift;
     my $args = shift;
    
-    map { $_ = URI->new($_)->canonical(); } @{$args->{'data'}};
-    map { $_ = URI->new($_)->canonical(); } @{$args->{'whitelist'}};
-   
     my @list;
     
-      
-    ## TODO -- finish (compare whitelist)
-    
-#    foreach (@{$args->{'data'}}){
-#        push(@list,$_);
-#    }
+    foreach (@{$args->{'data'}}){
+        my $found = 0;
+        next if($self->_tag_contains_whitelist($_->{'tags'}));
+        foreach my $w (@{$args->{'whitelist'}}){
+            $found = 1 if($w eq $_);
+        }
+        push(@list,$_) unless($found);
+    }
     return \@list
 }
 
