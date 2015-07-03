@@ -216,7 +216,7 @@ Advanced Options:
     -p, --ping                  ping the router for testing connectivity
     -T, --token=STRING          specify an access token
     -R, --remote=STRING         specify the remote, default: $remote
-    -v, --verbosity             <to do>
+    -v, --verbosity             -v (level 1) through -vvvvvv (level 6)
     --no-verify-ssl             turn off SSL/TLS verification
     
 Formatting Options:
