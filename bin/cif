@@ -179,7 +179,7 @@ Options:
 
 Filters:
     
-    -c, --confidence=INT        by confidence (greater or eaqual to)
+    -c, --confidence=INT        by confidence (greater or equal to)
     -n, --nolog                 do not log the query
     --tags=STRING,STRING        by tags (scanner,hijacked,botnet, ...)
     --description=STRING        by description
