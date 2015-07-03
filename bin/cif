@@ -180,7 +180,6 @@ Options:
 Filters:
     
     -c, --confidence=INT        by confidence (greater or eaqual to)
-    -l, --limit=STRINT          <to do>
     -n, --nolog                 do not log the query
     --tags=STRING,STRING        by tags (scanner,hijacked,botnet, ...)
     --description=STRING        by description
