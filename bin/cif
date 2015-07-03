@@ -187,10 +187,10 @@ Filters:
     --asn=INT,INT               by asns (1234,2445, ...)
     --otype=STRING,STRING       by observable type (ipv4,fqdn,url, ...)
     --provider=STRING,STRING    by provider (spamhaus.org,dragonresearchgroup.org, ...)
-    --application=STRING        filter baesd on the application field
+    --application=STRING        filter based on the application field
     --rdata=STRING              by rdata
     --group=STRING              by groups (everyone,group1,group2, ...)
-    --lasttime STRING           specify filter based on lasttime timestmap (less than, format: YYYY-MM-DDTHH:MM:SSZ)
+    --lasttime STRING           specify filter based on lasttime timestamp (less than, format: YYYY-MM-DDTHH:MM:SSZ)
     --firsttime STRING          specify filter based on firsttime timestmap (greater than, format: YYYY-MM-DDTHH:MM:SSZ)
     --reporttime STRING         specify filter based on reporttime timestmap (greater than, format: YYYY-MM-DDTHH:MM:SSZ)
     --reporttime-end STRING     specify filter based on reporttime timestmap (less than, format: YYYY-MM-DDTHH:MM:SSZ)
@@ -227,7 +227,7 @@ Formatting Options:
 
 Ping Options:
     --ttl=INT                   specify number of pings to send, default: $ping_ttl
-                                (0 infinate, halt with SIGINT or CTRL+C)
+                                (0 infinite, halt with SIGINT or CTRL+C)
  Examples:
     $0 -q 130.201.0.2
     $0 -q 130.201.0.0/16
