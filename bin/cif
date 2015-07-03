@@ -204,7 +204,7 @@ Filters:
                                 and reporttime-end to "now"
     
     --days                      number of days to go back
-    --feed
+    --feed                      generate a feed of data, meaning deduplicated and whitelisted
     --whitelist-confidence
     --whitelist-limit
 
