@@ -206,7 +206,7 @@ Filters:
     --days                      number of days to go back
     --feed                      generate a feed of data, meaning deduplicated and whitelisted
     --whitelist-confidence=INT  by confidence (greater or equal to) (default 25)
-    --whitelist-limit=INT       
+    --whitelist-limit=INT       specify a return limit of generated whitelist (default 50000)
 
     
 Advanced Options:
