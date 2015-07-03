@@ -232,14 +232,20 @@ Ping Options:
     $0 -q 130.201.0.2
     $0 -q 130.201.0.0/16
     $0 -q 2001:4860:4860::8888
-    
     $0 -q example.com
+    $0 -q 'http://www.example.com'
+    $0 -q 'john\@example.com'
+    $0 -q bf9d457bcd702fe836201df1b48c0bec 
+
     $0 --tags botnet,zeus -c 85
     $0 --application vnc,ssh --asns 1234 --cc RU,US
     $0 -q example.com --tags botnet,zeus -c 85 --limit 50
     
     $0 --otype ipv4 --aggregate observable --today
 
+    $0 --feed --otype ipv4 -c 85 -f csv
+    $0 --feed --otype fqdn -c 95 --tags botnet -f csv
+    $0 --feed --otype url -c 75 --today -f csv
 EOF
 }
 
