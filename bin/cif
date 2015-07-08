@@ -341,35 +341,37 @@ if($ping){
     }
     
     $Logger->info('search returned, formatting..');
-
-    unless(@{$data}[0]->{$sortby}){
-        $Logger->error('sort-by field: '.$sortby.' is not consistent in this data-set...');
-        $Logger->info('trying: sortby reporttime');
-        unless(@{$data}[0]->{'reporttime'}){
-            $Logger->error("sort-by field: 'reporttime' does not exist in this data-set...");
-            croak();
+    my $text = '';
+    if($#{$data} > -1){
+        unless(@{$data}[0]->{$sortby}){
+            $Logger->error('sort-by field: '.$sortby.' is not consistent in this data-set...');
+            $Logger->info('trying: sortby reporttime');
+            unless(@{$data}[0]->{'reporttime'}){
+                $Logger->error("sort-by field: 'reporttime' does not exist in this data-set...");
+                croak();
+            }
+            $sortby = 'reporttime';
         }
-        $sortby = 'reporttime';
-    }
+        
+        if(lc($sortby_direction) eq 'asc'){
+            $data = [ sort { $a->{$sortby} cmp $b->{$sortby} } @$data ];
+        } else {
+            $data = [ sort { $b->{$sortby} cmp $a->{$sortby} } @$data ];
+        }
+        
+        if($aggregate){
+            $Logger->info('aggregating...');
+            $ret = $cli->aggregate({
+                data        => $data,
+                aggregate   => $aggregate,
+            });
+        }
     
-    if(lc($sortby_direction) eq 'asc'){
-        $data = [ sort { $a->{$sortby} cmp $b->{$sortby} } @$data ];
-    } else {
-        $data = [ sort { $b->{$sortby} cmp $a->{$sortby} } @$data ];
-    }
-    
-    if($aggregate){
-        $Logger->info('aggregating...');
-        $ret = $cli->aggregate({
-            data        => $data,
-            aggregate   => $aggregate,
+        my $formatter = CIF::SDK::FormatFactory->new_plugin({ 
+            format => $format, 
         });
+        $text = $formatter->process($data) . "\n";
     }
-    
-    my $formatter = CIF::SDK::FormatFactory->new_plugin({ 
-        format => $format, 
-    });
-    my $text = $formatter->process($data);
-    print $text."\n";
+    print $text;
 }
 $Logger->info('done...');

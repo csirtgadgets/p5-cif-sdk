@@ -22,7 +22,6 @@ sub process {
     my $args = shift;
    
     my @list;
-    
     foreach (@{$args->{'data'}}){
         my $found = 0;
         next if($self->_tag_contains_whitelist($_->{'tags'}));
