@@ -1,7 +1,7 @@
 use 5.011;
 use strict;
 use warnings FATAL => 'all';
-use Test::More skip_all => 'lower levels need some work';
+use Test::More;
 use Data::Dumper;
 
 BEGIN {
@@ -10,24 +10,51 @@ BEGIN {
     use_ok('CIF::SDK::FeedFactory') || print "Bail out!\n";
 }
 
-my $data = {
-    'confidence'    => 100,
-    'observable'    => '2001:503:a83e::2:30',
-    'firsttime'     => '2015-07-03T13:58:44Z',
-    'tags'          => 'malware',
-    'group'         => 'everyone',
-    'tlp'           => 'amber',
-    'reporttime'    => '2015-07-03T13:58:44Z',
-    'lasttime'      => '2015-07-03T13:58:44Z',
-    'otype'         => 'ipv6',
-    'provider'      => 'csirtgadgets.org'
-};
+my $data = [
+    {
+        'confidence'    => 100,
+        'observable'    => '2001:4860:4860::8888',
+        'firsttime'     => '2015-07-03T13:58:44Z',
+        'tags'          => ['malware'],
+        'group'         => 'everyone',
+        'tlp'           => 'amber',
+        'reporttime'    => '2015-07-03T13:58:44Z',
+        'lasttime'      => '2015-07-03T13:58:44Z',
+        'otype'         => 'ipv6',
+        'provider'      => 'csirtgadgets.org'
+    },
+];
 
-for my $x (qw/ipv6/){
-	my $obj = CIF::SDK::FeedFactory->new_plugin({
-		otype => $x
-	});
-	ok($obj);
-}
+my $obj = CIF::SDK::FeedFactory->new_plugin({
+	otype => 'ipv6'
+});
 
+my $feed = $obj->process({
+    data => $data,
+    whitelist => [],
+});
+
+ok($#{$feed} == 0, 'verifying 1 element...');
+
+my $whitelist = [
+    {
+        'confidence'    => 100,
+        'observable'    => '2001:4860:4860::8888',
+        'firsttime'     => '2015-07-03T13:58:44Z',
+        'tags'          => ['whitelist'],
+        'group'         => 'everyone',
+        'tlp'           => 'amber',
+        'reporttime'    => '2015-07-03T13:58:44Z',
+        'lasttime'      => '2015-07-03T13:58:44Z',
+        'otype'         => 'ipv6',
+        'provider'      => 'csirtgadgets.org'
+    },
+];
+
+$feed = $obj->process({
+    data => $data,
+    whitelist => $whitelist,
+});
+
+ok($#{$feed} == -1, 'verifying no data');
 done_testing();
