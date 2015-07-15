@@ -289,8 +289,8 @@ if($ping){
     $Logger->info('running search...');
 
     # set default confidence for --feed if none is provided
-    if ( ! $filters->{'confidence'}) { $filters->{'confidence'} = $min_confidence};
-
+    if ($feed && !defined($filters->{'confidence'})) { $filters->{'confidence'} = $min_confidence};
+    
     ($ret,$err) = $cli->search($filters);
     
     croak($err) if($err);
