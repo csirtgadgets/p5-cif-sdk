@@ -85,7 +85,7 @@ GetOptions(
     'whitelist-confidence=i'    => \$whitelist_confidence,
     'whitelist-limit=i'         => \$whitelist_limit,
     
-    'fields|f=s'                => \$fields,
+    'fields=s'                => \$fields,
     
     'sortby=s'            => \$sortby,
     'sortby-direction=s'  => \$sortby_direction,
