@@ -23,6 +23,7 @@ use constant {
     REMOTE  => 'https://localhost',
     TIMEOUT => 300,
     LIMIT   => 500,
+    MIN_CONFIDENCE => 65,
     FORMAT  => 'table',
     CONFIG  => $ENV{'HOME'}.'/.cif.yml',
 };
@@ -48,6 +49,7 @@ my $lasthour;
 my $lastday;
 my $whitelist_confidence = 25;
 my $whitelist_limit = 50000;
+my $min_confidence = MIN_CONFIDENCE;
 
 my $filters;
 
@@ -285,6 +287,10 @@ if($ping){
     }
 } elsif($filters){
     $Logger->info('running search...');
+
+    # set default confidence for --feed if none is provided
+    if ($feed && !defined($filters->{'confidence'})) { $filters->{'confidence'} = $min_confidence};
+    
     ($ret,$err) = $cli->search($filters);
     
     croak($err) if($err);
