@@ -48,6 +48,7 @@ my $lasthour;
 my $lastday;
 my $whitelist_confidence = 25;
 my $whitelist_limit = 50000;
+my $fields              = 'tlp,group,reporttime,observable,cc,asn,confidence,tags,description,rdata,provider,altid_tlp,altid';
 
 my $filters;
 
@@ -81,6 +82,8 @@ GetOptions(
     
     'whitelist-confidence=i'    => \$whitelist_confidence,
     'whitelist-limit=i'         => \$whitelist_limit,
+    
+    'fields|f=s'                => \$fields,
     
     'sortby=s'            => \$sortby,
     'sortby-direction=s'  => \$sortby_direction,
@@ -224,6 +227,7 @@ Formatting Options:
     --sortby                    sort output, default: $sortby
     --sortby-direction          sortby direction, default: $sortby_direction
     --aggregate                 aggregate output based on field (ie: observable)
+    -f, --fields                specify output fields [default: $fields]
 
 Ping Options:
     --ttl=INT                   specify number of pings to send, default: $ping_ttl
@@ -366,9 +370,12 @@ if($ping){
                 aggregate   => $aggregate,
             });
         }
+        
+        $fields = [split(',',$fields)];
     
         my $formatter = CIF::SDK::FormatFactory->new_plugin({ 
-            format => $format, 
+            format   => $format,
+            columns  => $fields,
         });
         $text = $formatter->process($data) . "\n";
     }
