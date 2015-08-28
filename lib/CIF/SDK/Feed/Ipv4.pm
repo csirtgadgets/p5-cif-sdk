@@ -20,6 +20,22 @@ my @perm_whitelist = (
     "248.0.0.0/5",
 );
 
+sub normalize {
+    my $addr = shift;
+
+    my @bits = split(/\./,$addr);
+    foreach(@bits){
+        if(/^0+\/(\d+)$/){
+            $_ = '0/'.$1;
+        } else {
+            next if(/^0$/);
+            next unless(/^0{1,2}/);
+            $_ =~ s/^0{1,2}//;
+        }
+    }
+    return join('.',@bits);
+}
+
 sub understands {
 	my $self = shift;
 	my $args = shift;
@@ -39,6 +55,7 @@ sub process {
 	my @list;
 	
 	foreach (@{$args->{'data'}}){
+	    $_->{'observable'} = normalize($_->{'observable'});
 	    next if($self->_tag_contains_whitelist($_->{'tags'}));
 	   	next if($whitelist->match_string($_->{'observable'}));
 	   	push(@list,$_);
