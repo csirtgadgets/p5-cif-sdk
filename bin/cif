@@ -229,7 +229,7 @@ Formatting Options:
     --sortby                    sort output, default: $sortby
     --sortby-direction          sortby direction, default: $sortby_direction
     --aggregate                 aggregate output based on field (ie: observable)
-    -f, --fields                specify output fields [default: $fields]
+    --fields                    specify output fields [default: $fields]
 
 Ping Options:
     --ttl=INT                   specify number of pings to send, default: $ping_ttl
