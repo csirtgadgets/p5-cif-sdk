@@ -39,6 +39,7 @@ WriteMakefile(
         'Net::SSLeay'           => '1.49',
         'Mail::RFC822::Address' => 0,
         'YAML::Tiny'            => '1.63',
+        'HTML::Table'           => 0,
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => 'test-*' },
