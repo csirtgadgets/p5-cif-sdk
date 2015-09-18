@@ -1,7 +1,7 @@
 use 5.011;
 use strict;
 use warnings FATAL => 'all';
-use Test::More skip_all => 'bug with html::table version and some cpan requirements code';
+use Test::More;
 use Data::Dumper;
 
 BEGIN {

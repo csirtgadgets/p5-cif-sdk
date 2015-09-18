@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Mouse;
-require HTML::Table;
+use HTML::Table;
 
 with 'CIF::SDK::Format';
 
