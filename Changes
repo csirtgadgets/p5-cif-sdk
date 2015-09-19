@@ -1,0 +1,118 @@
+Revision history for CIF-SDK
+
+0.00_30 - 2015-08-13
+    - adds md5 feed function
+
+0.00_29	- 2015-07-15
+    - https://github.com/csirtgadgets/p5-cif-sdk/issues/37 
+
+0.00_28 - 2015-07-15
+    - https://github.com/csirtgadgets/p5-cif-sdk/issues/42
+
+0.00_27 - 2015-07-08
+    - https://github.com/csirtgadgets/massive-octo-spice/issues/279
+
+0.00_26 - 2015-07-06
+    - https://github.com/csirtgadgets/p5-cif-sdk/issues/34
+
+0.00_25	- 2015-06-20
+    - https://github.com/csirtgadgets/p5-cif-sdk/issues/36
+    - https://github.com/csirtgadgets/p5-cif-sdk/issues/35 
+
+0.00_24 - 2015-06-10
+    - https://github.com/csirtgadgets/p5-cif-sdk/issues/28
+
+0.00_23 - 2015-06-08
+    - https://github.com/csirtgadgets/p5-cif-sdk/issues/33
+
+0.00_22	- 2015-06-03
+    - adds html formatter output
+    - fixes: https://github.com/csirtgadgets/p5-cif-sdk/issues/29
+    - fixes: https://github.com/csirtgadgets/massive-octo-spice/issues/216
+
+0.00_21 - 2015-05-21
+    - fixes:
+        https://github.com/csirtgadgets/p5-cif-sdk/issues/27
+
+0.00_20   2015-05-11
+    - fixes:
+        https://github.com/csirtgadgets/p5-cif-sdk/issues/25
+
+0.00_19   2015-05-01
+    - fixes:
+        - added support for description field
+
+0.00_18 - 2015-05-01
+    - fixes:
+        https://github.com/csirtgadgets/p5-cif-sdk/issues/18
+	    https://github.com/csirtgadgets/p5-cif-sdk/issues/19
+
+0.00_17 - 2015-04-04
+    - fixes:
+        https://github.com/csirtgadgets/p5-cif-sdk/issues/15
+        https://github.com/csirtgadgets/p5-cif-sdk/issues/16
+
+0.00_16 - 2015-02-24
+    - improvements to cif-feed, Client.pm error messages
+
+0.00_16 - 2015-01-20
+    - improvements to cif-feed
+        - cleaned up url feed generation
+        - added ?nowait flag
+
+0.00_15 - 2014-12-23
+    - fix to default columns in Format.pm
+
+0.00_14	- 2014-12-04
+    - fixes: https://github.com/csirtgadgets/p5-cif-sdk/issues/11
+    - fixes: https://github.com/csirtgadgets/p5-cif-sdk/issues/9
+    - fixes: https://github.com/csirtgadgets/p5-cif-sdk/issues/8
+    - fixes: https://github.com/csirtgadgets/p5-cif-sdk/issues/10
+
+0.00_13 - 2014-12-04
+    - fixes: https://github.com/csirtgadgets/p5-cif-sdk/issues/7
+
+0.00_12 - 2014-12-01
+    - fixes: https://github.com/csirtgadgets/p5-cif-sdk/issues/5
+
+0.00_11 - 2014-12-01
+    - support for https://github.com/csirtgadgets/massive-octo-spice/issues/78
+
+0.00_10 - 2014-11-28
+    - adding simplified aggregation: https://github.com/csirtgadgets/p5-cif-sdk/issues/3
+
+0.00_09 - 2014-11-28
+    - bugfix to --sortby
+
+0.00_08 - 2014-11-26
+    - minor bugfixes
+
+0.00_07 - 2014-11-26
+    - fixes: https://github.com/csirtgadgets/massive-octo-spice/issues/107 (--limit)
+
+0.00_06 - 2014-11-17
+    - fixes: https://github.com/csirtgadgets/massive-octo-spice/issues/95
+
+0.00_05 - 2014-11-13
+    - changes to in error handling (for token support)
+    - switched from ~/.cif to ~/.cif.yml (better editor support)
+    - moving token auth into headers
+    - bugfixes to cif-feed
+
+0.00_04 - 2014-10-28
+    - bugfix to lib/CIF/SDK/Feed/Ipv4
+    - setting static ver of Log::Log4perl
+
+0.00_03 - 2014-10-21
+    - added nowait option (use with caution and KeepAlive=0)
+    - bugfix to address regex
+
+0.00_02 - 2014-09-14
+    - added bin/cif-feed for feed generation
+    - cleaed up headers for use with new api
+    - moved to Module::Build from Module::Install
+    - converted to use YAML style configs
+
+0.00_01 - 2014-06
+        First version, released on an unsuspecting world.
+

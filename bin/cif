@@ -1,0 +1,390 @@
+#!perl
+
+BEGIN {
+    use FindBin;
+    use local::lib "$FindBin::Bin/..";
+}
+
+use feature 'say';
+use strict;
+use warnings FATAL => 'all';
+
+use CIF::SDK qw/init_logging $Logger parse_config/;
+use CIF::SDK::Client;
+use CIF::SDK::FormatFactory;
+use CIF::SDK::FeedFactory;
+use Getopt::Long;
+use Carp;
+use Data::Dumper;
+use DateTime;
+use JSON::XS qw(encode_json decode_json);
+
+use constant {
+    REMOTE  => 'https://localhost',
+    TIMEOUT => 300,
+    LIMIT   => 500,
+    MIN_CONFIDENCE => 65,
+    FORMAT  => 'table',
+    CONFIG  => $ENV{'HOME'}.'/.cif.yml',
+};
+
+my $help;
+my $remote            = REMOTE;
+my $no_verify_ssl     = 0;
+my $timeout           = TIMEOUT;
+my $token;
+my $format            = FORMAT;
+my $ping              = 0;
+my $submit            = 0;
+my $ping_ttl          = 4;
+my $debug             = 0;
+my $verbosity         = 0;
+my $config            = CONFIG;
+my $feed;
+my $sortby            = 'lasttime';
+my $sortby_direction  = 'asc';
+my $aggregate;
+my $today;
+my $lasthour;
+my $lastday;
+my $whitelist_confidence = 25;
+my $whitelist_limit = 50000;
+my $fields              = 'tlp,group,reporttime,observable,cc,asn,confidence,tags,description,rdata,provider,altid_tlp,altid';
+my $min_confidence = MIN_CONFIDENCE;
+
+my $filters;
+
+Getopt::Long::Configure("bundling");
+GetOptions(
+    'help|h'              => \$help, 
+    'config|C=s'          => \$config,
+    'debug|d'             => \$debug,
+    'verbosity|v+'        => \$verbosity,
+    
+    'remote|R=s'          => \$remote,
+    'query|q=s'           => \$filters->{'observable'},
+    'id=s'                => \$filters->{'id'},
+    'submit|s'            => \$submit,
+    'token|T=s'           => \$token,
+    'group|g=s'           => \$filters->{'group'},
+    'limit|l=i'           => \$filters->{'limit'},
+    'confidence|c=i'      => \$filters->{'confidence'},
+    'tags|t=s'            => \$filters->{'tags'},
+    'description=s'       => \$filters->{'description'},
+    'cc=s'                => \$filters->{'cc'},
+    'application=s'       => \$filters->{'application'},
+    'asn=s'               => \$filters->{'asn'},
+    'otype=s'             => \$filters->{'otype'},
+    'provider=s'          => \$filters->{'provider'},
+    'rdata=s'             => \$filters->{'rdata'},
+    'firsttime=s'        => \$filters->{'firsttime'},
+    'lasttime=s'          => \$filters->{'lasttime'},
+    'reporttime=s'        => \$filters->{'reporttime'},
+    'reporttime-end=s'    => \$filters->{'reporttimeend'},
+    
+    'whitelist-confidence=i'    => \$whitelist_confidence,
+    'whitelist-limit=i'         => \$whitelist_limit,
+    
+    'fields=s'                => \$fields,
+    
+    'sortby=s'            => \$sortby,
+    'sortby-direction=s'  => \$sortby_direction,
+    'aggregate=s'         => \$aggregate,
+    'feed'                => \$feed,
+    
+    'today'               => \$today,
+    'last-hour'           => \$lasthour,
+    'last-day'              => \$lastday,
+    
+    'no-verify-ssl'       => \$no_verify_ssl,
+    
+    'ping|p'              => \$ping,
+    'format|f=s'          => \$format,
+    'nolog|n'             => \$filters->{'nolog'},
+    'ttl=n'               => \$ping_ttl,
+) or die(usage());
+
+die(usage()) if($help);
+
+my $found = 0;
+foreach (keys %$filters){
+    next unless($filters->{$_});
+    $found = 1;
+    last;
+}
+
+die(usage()) unless($found || $ping || $submit);
+
+if(-e $config){
+    $config = parse_config($config)->{'client'} || {};
+
+    $remote             = $config->{'remote'} if($config->{'remote'} && $remote eq REMOTE);
+    $token              = $config->{'token'} if($config->{'token'} && !$token);
+    $no_verify_ssl      = $config->{'no_verify_ssl'} if($config->{'no_verify_ssl'} && !$no_verify_ssl);
+    $timeout            = $config->{'timeout'} if($config->{'timeout'} && $timeout != TIMEOUT);
+    $filters->{'nolog'} = $config->{'nolog'} if($config->{'nolog'});
+}
+
+my $loglevel = ($debug) ? 'DEBUG' : 'WARN';
+
+init_logging(
+    { 
+        level       => $loglevel,
+        category    => 'cif',
+    },
+);
+
+if($verbosity){
+    unless($debug){ # we're already at TRACE
+        $Logger->more_logging($verbosity);
+    }
+}
+
+die(usage()."\nmissing Token (--token|-T)\n") unless($token);
+
+if($submit){
+    $submit = [];
+    while(<STDIN>){
+        chomp();
+        push(@$submit,decode_json(lc($_)));
+    }
+}
+
+if($today){
+    my $dt = DateTime->from_epoch(epoch => time());
+    $filters->{'reporttime'} = $dt->ymd().'T00:00:00Z';
+}
+
+if($lasthour){
+    my $dt = DateTime->from_epoch(epoch => time());
+    $filters->{'reporttime'} = $dt->ymd().'T'.$dt->hour.':00:00Z';
+    $filters->{'reporttimeend'} = $dt->ymd().'T'.$dt->hour.':59:59Z';
+}
+
+if($lastday){
+    my $dt = DateTime->from_epoch(epoch => time());
+    $filters->{'reporttime'} = DateTime->now()->subtract(hours => 23, minutes => 59, seconds => 59);
+    $filters->{'reporttime'} = $filters->{'reporttime'}->ymd().'T'.$filters->{'reporttime'}->hms().'Z';
+    $filters->{'reporttimeend'} = $dt->ymd().'T'.$dt->hms().'Z';
+}
+sub usage {
+    return <<EOF;
+
+Usage: $0 [OPTION]
+
+Options:
+
+    -q, --query=STRING          specify a search
+    --id STRING                 specify an id to retrieve
+    -f, --format=FORMAT         specify the output format (Table, CSV, Json, Snort, Bro, default: $format)
+    -l, --limit=INT             specify a return limit (default set at router)
+    -s, --submit                submit data via STDIN (json keypairs)
+    
+    -h, --help                  this message
+
+Filters:
+    
+    -c, --confidence=INT        by confidence (greater or equal to)
+    -n, --nolog                 do not log the query
+    --tags=STRING,STRING        by tags (scanner,hijacked,botnet, ...)
+    --description=STRING        by description
+    --cc=STRING,STRING          by country codes (RU,US, ...)
+    --asn=INT,INT               by asns (1234,2445, ...)
+    --otype=STRING,STRING       by observable type (ipv4,fqdn,url, ...)
+    --provider=STRING,STRING    by provider (spamhaus.org,dragonresearchgroup.org, ...)
+    --application=STRING        filter based on the application field
+    --rdata=STRING              by rdata
+    --group=STRING              by groups (everyone,group1,group2, ...)
+    --lasttime STRING           specify filter based on lasttime timestamp (less than, format: YYYY-MM-DDTHH:MM:SSZ)
+    --firsttime STRING          specify filter based on firsttime timestmap (greater than, format: YYYY-MM-DDTHH:MM:SSZ)
+    --reporttime STRING         specify filter based on reporttime timestmap (greater than, format: YYYY-MM-DDTHH:MM:SSZ)
+    --reporttime-end STRING     specify filter based on reporttime timestmap (less than, format: YYYY-MM-DDTHH:MM:SSZ)
+    
+    --today                     auto-sets reporttime to today, 00:00:00Z (UTC)
+    
+    --last-hour                 auto-sets reporttime to the beginning of the previous full hour
+                                and reporttime-end to end of previous full hour
+                                
+    --last-day                  auto-sets reporttime to 23 hours and 59 seconds ago (current time UTC)
+                                and reporttime-end to "now"
+    
+    --days                      number of days to go back
+    --feed                      generate a feed of data, meaning deduplicated and whitelisted
+    --whitelist-confidence=INT  by confidence (greater or equal to) (default 25)
+    --whitelist-limit=INT       specify a return limit of generated whitelist (default 50000)
+
+    
+Advanced Options:
+
+    -C, --config=STRING         specify a config file
+    -d, --debug                 print debug output to stdout
+    -p, --ping                  ping the router for testing connectivity
+    -T, --token=STRING          specify an access token
+    -R, --remote=STRING         specify the remote, default: $remote
+    -v, --verbosity             -v (level 1) through -vvvvvv (level 6)
+    --no-verify-ssl             turn off SSL/TLS verification
+    
+Formatting Options:
+
+    --sortby                    sort output, default: $sortby
+    --sortby-direction          sortby direction, default: $sortby_direction
+    --aggregate                 aggregate output based on field (ie: observable)
+    -f, --fields                specify output fields [default: $fields]
+
+Ping Options:
+    --ttl=INT                   specify number of pings to send, default: $ping_ttl
+                                (0 infinite, halt with SIGINT or CTRL+C)
+ Examples:
+    $0 -q 130.201.0.2
+    $0 -q 130.201.0.0/16
+    $0 -q 2001:4860:4860::8888
+    $0 -q example.com
+    $0 -q 'http://www.example.com'
+    $0 -q 'john\@example.com'
+    $0 -q bf9d457bcd702fe836201df1b48c0bec 
+
+    $0 --tags botnet,zeus -c 85
+    $0 --application vnc,ssh --asns 1234 --cc RU,US
+    $0 -q example.com --tags botnet,zeus -c 85 --limit 50
+    
+    $0 --otype ipv4 --aggregate observable --today
+
+    $0 --feed --otype ipv4 -c 85 -f csv
+    $0 --feed --otype fqdn -c 95 --tags botnet -f csv
+    $0 --feed --otype url -c 75 --today -f csv
+EOF
+}
+
+$Logger->info('starting up client...');
+my $cli = CIF::SDK::Client->new({
+    token       => $token,
+    remote      => $remote,
+    timeout     => $timeout,
+    verify_ssl  => ($no_verify_ssl) ? 0 : 1,
+    nolog       => $filters->{'nolog'},
+});
+
+my ($err,$ret);
+if($ping){
+     $Logger->info('pinging: '.$remote.'...');
+    my $d = 0;
+    $SIG{'INT'} = sub { $d = 1; };
+    my ($x,$y) = (0, $ping_ttl);
+    while(!$d){
+        ($ret,$err) = $cli->ping();
+        if($ret){
+            say 'roundtrip: '.$ret.' ms';
+            select(undef,undef,undef,1);
+            $x++ if($y); # increase if we're not going infinately
+            $d = 1 if($x && ($x == $y)); # done if we reach ttl
+        } else {
+            $Logger->fatal($err);
+            $d = 1;
+        }
+    }
+} elsif($submit){
+    ($ret,$err) = $cli->submit($submit);
+    if($err){
+        $Logger->warn($err);
+    } else {
+        $Logger->info("submitted: ".@{$ret}[0]);
+    }
+} elsif($filters){
+    $Logger->info('running search...');
+
+    # set default confidence for --feed if none is provided
+    if ($feed && !defined($filters->{'confidence'})) { $filters->{'confidence'} = $min_confidence};
+    
+    ($ret,$err) = $cli->search($filters);
+    
+    croak($err) if($err);
+    unless($#{$ret} > -1){
+        $Logger->info('no results found...');
+        print '';
+        exit(0);
+    }
+    
+    my $data = $ret;
+    $ret = undef;
+    
+    if($feed){
+        my $otype = $filters->{'otype'};
+        croak('--otype is required') unless($otype);
+        $Logger->debug('pulling '.$otype.' whitelist');
+    
+        ($ret,$err) = $cli->search({
+        	otype          => $otype,
+        	tags           => 'whitelist',
+        	confidence     => $whitelist_confidence,
+        	limit          => $whitelist_limit,
+        	reporttime     => $filters->{'reporttime'},
+        	reporttimeend  => $filters->{'reporttimeend'},
+        });
+        
+        if($err){
+            $Logger->error($err);
+            exit(-1);
+        }
+        
+        my $wl = {};
+        
+        $wl->{$otype} = $ret;
+        my $whitelist = $wl->{$otype};
+        
+        my $num_whitelist = ($#{$whitelist} + 1);
+        
+        $Logger->debug('got whitelist ['.$num_whitelist.']... grabbing requested dataset...');
+        my $plugin = CIF::SDK::FeedFactory->new_plugin({ otype => $otype }) || croak('unknown otype');    
+        
+        $Logger->debug("aggregating...");
+        $data = $cli->aggregate({
+            data        => $data,
+            aggregate   => 'observable',
+        });
+
+        $Logger->debug("applying whitelist...");
+        $data = $plugin->process({
+            data        => $data,
+            whitelist   => $whitelist
+        });
+        
+    }
+    
+    $Logger->info('search returned, formatting..');
+    my $text = '';
+    if($#{$data} > -1){
+        unless(@{$data}[0]->{$sortby}){
+            $Logger->error('sort-by field: '.$sortby.' is not consistent in this data-set...');
+            $Logger->info('trying: sortby reporttime');
+            unless(@{$data}[0]->{'reporttime'}){
+                $Logger->error("sort-by field: 'reporttime' does not exist in this data-set...");
+                croak();
+            }
+            $sortby = 'reporttime';
+        }
+        
+        if(lc($sortby_direction) eq 'asc'){
+            $data = [ sort { $a->{$sortby} cmp $b->{$sortby} } @$data ];
+        } else {
+            $data = [ sort { $b->{$sortby} cmp $a->{$sortby} } @$data ];
+        }
+        
+        if($aggregate){
+            $Logger->info('aggregating...');
+            $ret = $cli->aggregate({
+                data        => $data,
+                aggregate   => $aggregate,
+            });
+        }
+        
+        $fields = [split(',',$fields)];
+    
+        my $formatter = CIF::SDK::FormatFactory->new_plugin({ 
+            format   => $format,
+            columns  => $fields,
+        });
+        $text = $formatter->process($data) . "\n";
+    }
+    print $text;
+}
+$Logger->info('done...');
