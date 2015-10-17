@@ -383,6 +383,10 @@ if($ping){
             format   => $format,
             columns  => $fields,
         });
+        if($formatter eq '0'){
+            $Logger->error('unable to load format [-f|--format] plugin: '.$format);
+            exit(-1);
+        }
         $text = $formatter->process($data) . "\n";
     }
     print $text;
