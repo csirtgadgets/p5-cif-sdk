@@ -52,6 +52,7 @@ my $whitelist_limit = 50000;
 my $fields              = 'tlp,group,reporttime,observable,cc,asn,confidence,tags,description,rdata,provider,altid_tlp,altid';
 my $min_confidence = MIN_CONFIDENCE;
 my $days;
+my $filename;
 
 my $filters;
 
@@ -104,6 +105,7 @@ GetOptions(
     'format|f=s'          => \$format,
     'nolog|n'             => \$filters->{'nolog'},
     'ttl=n'               => \$ping_ttl,
+    'filename=s'          => \$filename
 ) or die(usage());
 
 die(usage()) if($help);
@@ -240,6 +242,7 @@ Formatting Options:
     --sortby-direction          sortby direction, default: $sortby_direction
     --aggregate                 aggregate output based on field (ie: observable)
     --fields                    specify output fields [default: $fields]
+    --filename                  specify output filename [default: STDOUT]
 
 Ping Options:
     --ttl=INT                   specify number of pings to send, default: $ping_ttl
@@ -390,15 +393,21 @@ if($ping){
         $fields = [split(',',$fields)];
     
         my $formatter = CIF::SDK::FormatFactory->new_plugin({ 
-            format   => $format,
-            columns  => $fields,
+            format      => $format,
+            columns     => $fields,
         });
         if($formatter eq '0'){
             $Logger->error('unable to load format [-f|--format] plugin: '.$format);
             exit(-1);
         }
-        $text = $formatter->process($data) . "\n";
+        $text = $formatter->process($data, { filename => $filename }) . "\n";
     }
-    print $text;
+    if($filename){
+        open(F, '>', $filename);
+        print F $text;
+        close(F);   
+    } else {
+        print $text;
+    }
 }
 $Logger->info('done...');
