@@ -51,6 +51,8 @@ my $whitelist_confidence = 25;
 my $whitelist_limit = 50000;
 my $fields              = 'tlp,group,reporttime,observable,cc,asn,confidence,tags,description,rdata,provider,altid_tlp,altid';
 my $min_confidence = MIN_CONFIDENCE;
+my $days;
+my $filename;
 
 my $filters;
 
@@ -92,9 +94,10 @@ GetOptions(
     'aggregate=s'         => \$aggregate,
     'feed'                => \$feed,
     
-    'today'               => \$today,
-    'last-hour'           => \$lasthour,
+    'today'                 => \$today,
+    'last-hour'             => \$lasthour,
     'last-day'              => \$lastday,
+    'days=i'                  => \$days,
     
     'no-verify-ssl'       => \$no_verify_ssl,
     
@@ -102,6 +105,7 @@ GetOptions(
     'format|f=s'          => \$format,
     'nolog|n'             => \$filters->{'nolog'},
     'ttl=n'               => \$ping_ttl,
+    'filename=s'          => \$filename
 ) or die(usage());
 
 die(usage()) if($help);
@@ -167,6 +171,14 @@ if($lastday){
     $filters->{'reporttime'} = $filters->{'reporttime'}->ymd().'T'.$filters->{'reporttime'}->hms().'Z';
     $filters->{'reporttimeend'} = $dt->ymd().'T'.$dt->hms().'Z';
 }
+
+if($days){
+    my $dt = DateTime->from_epoch(epoch => time());
+    $filters->{'reporttime'} = DateTime->now()->subtract(days => $days);
+    $filters->{'reporttime'} = $filters->{'reporttime'}->ymd().'T'.$filters->{'reporttime'}->hms().'Z';
+    $filters->{'reporttimeend'} = $dt->ymd().'T'.$dt->hms().'Z';
+}
+
 sub usage {
     return <<EOF;
 
@@ -230,6 +242,7 @@ Formatting Options:
     --sortby-direction          sortby direction, default: $sortby_direction
     --aggregate                 aggregate output based on field (ie: observable)
     --fields                    specify output fields [default: $fields]
+    --filename                  specify output filename [default: STDOUT]
 
 Ping Options:
     --ttl=INT                   specify number of pings to send, default: $ping_ttl
@@ -380,11 +393,21 @@ if($ping){
         $fields = [split(',',$fields)];
     
         my $formatter = CIF::SDK::FormatFactory->new_plugin({ 
-            format   => $format,
-            columns  => $fields,
+            format      => $format,
+            columns     => $fields,
         });
-        $text = $formatter->process($data) . "\n";
+        if($formatter eq '0'){
+            $Logger->error('unable to load format [-f|--format] plugin: '.$format);
+            exit(-1);
+        }
+        $text = $formatter->process($data, { filename => $filename }) . "\n";
     }
-    print $text;
+    if($filename){
+        open(F, '>', $filename);
+        print F $text;
+        close(F);   
+    } else {
+        print $text;
+    }
 }
 $Logger->info('done...');
