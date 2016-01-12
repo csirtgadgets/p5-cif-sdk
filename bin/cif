@@ -78,6 +78,7 @@ GetOptions(
     'asn=s'               => \$filters->{'asn'},
     'otype=s'             => \$filters->{'otype'},
     'provider=s'          => \$filters->{'provider'},
+    'tlp=s'               => \$filters->{'tlp'},
     'rdata=s'             => \$filters->{'rdata'},
     'firsttime=s'        => \$filters->{'firsttime'},
     'lasttime=s'          => \$filters->{'lasttime'},
