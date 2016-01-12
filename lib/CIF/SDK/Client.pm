@@ -154,6 +154,7 @@ sub _make_request {
 
 	foreach my $p (keys %$params){
 		next unless($params->{$p});
+		$params->{$p} =~ s/\s/\%20/g;
 		$uri .= $p.'='.$params->{$p}.'&';
 	}
 	
