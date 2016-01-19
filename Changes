@@ -1,5 +1,8 @@
 Revision history for CIF-SDK
 
+2.00_32 - 2016-01-19
+    - adding gzip support from RC.8
+
 2.00_31 - 2015-10-17
     - https://github.com/csirtgadgets/p5-cif-sdk/issues/44
     - https://github.com/csirtgadgets/p5-cif-sdk/issues/39

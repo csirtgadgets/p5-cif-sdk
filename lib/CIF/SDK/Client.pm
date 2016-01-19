@@ -11,6 +11,8 @@ use Time::HiRes qw(tv_interval gettimeofday);
 use Carp;
 use Data::Dumper;
 use MIME::Base64 qw/encode_base64 decode_base64/;
+use Gzip::Faster;
+use Try::Tiny;
 
 =head1 NAME
 
@@ -147,6 +149,8 @@ sub _make_request {
 	my $route 	= shift;
 	my $params 	= shift || {};
 	
+	$params->{'gzip'} = 1;
+	
 	my $uri = '';
 	
 	my $token = $params->{'token'} || $self->token;
@@ -169,9 +173,28 @@ sub _make_request {
     my $resp = $self->handle->request('GET',$uri,$params);
     
     $Logger->info('status: '.$resp->{'status'});
+    
+    my $size = ($resp->{'headers'}->{'content-length'} / 1024 / 1024); # mb
+    if($size < 1){
+        $size = '< 1';
+    }
+    $Logger->info('response size: '.$size . 'MB');
 
     if($resp->{'headers'}->{'content-type'} && $resp->{'headers'}->{'content-type'} =~ /^application\/json$/){
         $Logger->debug('decoding content..');
+        try {
+            $Logger->debug('decompressing...');
+            my $ret = decode_base64($resp->{'content'});
+            $ret = gunzip($ret);
+            $resp->{'content'} = $ret;
+        } catch {
+            my $err = shift;
+            $Logger->debug($err);
+            unless($err =~ /Data input to gunzip is not in gzip format/){
+                die($err);
+            }
+        };
+            
         $resp->{'content'} = decode_json($resp->{'content'});
         if ($resp->{'status'} eq '422'){
             $resp->{'content'} = {"message" => "invalid request" };
