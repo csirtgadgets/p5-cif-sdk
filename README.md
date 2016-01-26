@@ -7,7 +7,7 @@ The CIF Software Development Kit (SDK) for Perl contains library code and exampl
 We highly recomend using Ubuntu 14.04 LTS.
 ## Ubuntu 14
  ```
- sudo apt-get install -y git build-essential cpanminus libmodule-install-perl
+ sudo apt-get install -y git build-essential cpanminus libmodule-install-perl zlib1g-dev
  sudo cpanm http://backpan.perl.org/authors/id/M/MS/MSCHILLI/Log-Log4perl-1.44.tar.gz git://github.com/csirtgadgets/p5-cif-sdk.git 
  ```
 
