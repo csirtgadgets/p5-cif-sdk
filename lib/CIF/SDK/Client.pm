@@ -182,18 +182,20 @@ sub _make_request {
 
     if($resp->{'headers'}->{'content-type'} && $resp->{'headers'}->{'content-type'} =~ /^application\/json$/){
         $Logger->debug('decoding content..');
-        try {
-            $Logger->debug('decompressing...');
-            my $ret = decode_base64($resp->{'content'});
-            $ret = gunzip($ret);
-            $resp->{'content'} = $ret;
-        } catch {
-            my $err = shift;
-            $Logger->debug($err);
-            unless($err =~ /Data input to gunzip is not in gzip format/){
-                die($err);
-            }
-        };
+        if($resp->{'content'} !~ /^\[/){
+            try {
+                $Logger->debug('decompressing...');
+                my $ret = decode_base64($resp->{'content'});
+                $ret = gunzip($ret);
+                $resp->{'content'} = $ret;
+            } catch {
+                my $err = shift;
+                $Logger->debug($err);
+                unless($err =~ /Data input to gunzip is not in gzip format/){
+                    die($err);
+                }
+            };
+        }
             
         $resp->{'content'} = decode_json($resp->{'content'});
         if ($resp->{'status'} eq '422'){
