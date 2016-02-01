@@ -1,5 +1,9 @@
 Revision history for CIF-SDK
 
+2.00_34 - 2016-02-01
+    - bugfix in the way we handle gzip
+    - remove local::lib dep
+
 2.00_33 - 2016-01-19
     - adding gzip::faster dep
 
