@@ -272,8 +272,8 @@ sub search {
     my $self = shift;
     my $args = shift;
     
-    if($filters->{'cc'}){
-        $filters->{'cc'} = lc($filters->{'cc'});
+    if($args->{'cc'}){
+        $args->{'cc'} = lc($args->{'cc'});
     }
 
     my $resp = $self->_make_request('observables',$args);
