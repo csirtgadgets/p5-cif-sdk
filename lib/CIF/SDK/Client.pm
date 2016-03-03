@@ -271,6 +271,10 @@ sub aggregate {
 sub search {
     my $self = shift;
     my $args = shift;
+    
+    if($filters->{'cc'}){
+        $filters->{'cc'} = lc($filters->{'cc'});
+    }
 
     my $resp = $self->_make_request('observables',$args);
 
