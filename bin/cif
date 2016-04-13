@@ -305,6 +305,17 @@ if($ping){
     # set default confidence for --feed if none is provided
     if ($feed && !defined($filters->{'confidence'})) { $filters->{'confidence'} = $min_confidence};
     
+    if($feed && !$filters->{'reporttime'}){
+        my $dt = DateTime->from_epoch(epoch => time());
+        $filters->{'reporttime'} = DateTime->now()->subtract(days => 30);
+        $filters->{'reporttime'} = $filters->{'reporttime'}->ymd().'T'.$filters->{'reporttime'}->hms().'Z';
+        $filters->{'reporttimeend'} = $dt->ymd().'T'.$dt->hms().'Z';
+        
+        if(!$filters->{'limit'}){
+            $filters->{'limit'} = 50000;
+        }
+    }
+    
     ($ret,$err) = $cli->search($filters);
     
     croak($err) if($err);
@@ -321,7 +332,7 @@ if($ping){
         my $otype = $filters->{'otype'};
         croak('--otype is required') unless($otype);
         $Logger->debug('pulling '.$otype.' whitelist');
-    
+        
         ($ret,$err) = $cli->search({
         	otype          => $otype,
         	tags           => 'whitelist',
