@@ -1,5 +1,8 @@
 Revision history for CIF-SDK
 
+2.00_35 - 2016-04-15
+    - bugfix to feed limits
+
 2.00_34 - 2016-02-01
     - bugfix in the way we handle gzip
     - remove local::lib dep
