@@ -310,10 +310,10 @@ if($ping){
         $filters->{'reporttime'} = DateTime->now()->subtract(days => 30);
         $filters->{'reporttime'} = $filters->{'reporttime'}->ymd().'T'.$filters->{'reporttime'}->hms().'Z';
         $filters->{'reporttimeend'} = $dt->ymd().'T'.$dt->hms().'Z';
-        
-        if(!$filters->{'limit'}){
-            $filters->{'limit'} = 50000;
-        }
+    }
+    
+    if(!$filters->{'limit'}){
+        $filters->{'limit'} = 50000;
     }
     
     ($ret,$err) = $cli->search($filters);
@@ -357,11 +357,17 @@ if($ping){
         $Logger->debug('got whitelist ['.$num_whitelist.']... grabbing requested dataset...');
         my $plugin = CIF::SDK::FeedFactory->new_plugin({ otype => $otype }) || croak('unknown otype');    
         
-        $Logger->debug("aggregating...");
+        my $num_returned = @$data;
+        $Logger->debug("aggregating $num_returned records");
         $data = $cli->aggregate({
             data        => $data,
             aggregate   => 'observable',
         });
+        my $new_num = @$data;
+        if($new_num != $num_returned){
+            $new_num = ($num_returned - $new_num);
+            $Logger->info("aggregated $new_num records");
+        }
 
         $Logger->debug("applying whitelist...");
         $data = $plugin->process({
