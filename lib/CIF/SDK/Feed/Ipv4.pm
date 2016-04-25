@@ -58,6 +58,9 @@ sub process {
 	    $_->{'observable'} = normalize($_->{'observable'});
 	    next if($self->_tag_contains_whitelist($_->{'tags'}));
 	   	next if($whitelist->match_string($_->{'observable'}));
+	   	if($_->{'observable'} =~ /^\S+\/(\d+)$/){
+	   	    next if($1 < 8);
+	   	}
 	   	push(@list,$_);
 	}
 	return \@list

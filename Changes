@@ -1,5 +1,8 @@
 Revision history for CIF-SDK
 
+2.00_36 - 2016-04-25
+    - ignoring prefixes < 8 in feeds
+
 2.00_35 - 2016-04-15
     - bugfix to feed limits
 
