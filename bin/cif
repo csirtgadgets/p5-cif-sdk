@@ -368,7 +368,7 @@ if($ping){
             $new_num = ($num_returned - $new_num);
             $Logger->info("aggregated $new_num records");
         }
-
+        
         $Logger->debug("applying whitelist...");
         $data = $plugin->process({
             data        => $data,

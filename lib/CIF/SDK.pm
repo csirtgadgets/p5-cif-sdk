@@ -14,7 +14,7 @@ CIF::SDK - The CIF Software Development Kit
 
 =cut
 
-our $VERSION        = '2.00_36';
+our $VERSION        = '2.00_37';
 our $API_VERSION    = 2;
 
 =head1 VERSION

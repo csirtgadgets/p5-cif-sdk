@@ -9,7 +9,7 @@ use Net::DNS::Match;
 with 'CIF::SDK::Feed';
 
 # arbitrary based on http://www.alexa.com/topsites as of 2014-08
-my @perm_whitelist = [
+my @perm_whitelist = (
     'google.com',
     'yahoo.com',
     'facebook.com',
@@ -25,7 +25,7 @@ my @perm_whitelist = [
     'bing.com',
     'wordpress.com',
     'msn.com',
-];
+);
 
 sub understands {
     my $self = shift;
@@ -41,7 +41,10 @@ sub process {
     
     my $whitelist = Net::DNS::Match->new();
     $whitelist->add(\@perm_whitelist) unless($args->{'noperm'});
-    $whitelist->add($args->{'whitelist'});
+    
+    if($args->{'whitelist'}){
+        $whitelist->add($_->{'observable'}) foreach (@{$args->{'whitelist'}});
+    }
     
     my @list;
     
