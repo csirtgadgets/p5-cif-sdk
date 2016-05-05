@@ -58,7 +58,7 @@ my @parts = split("\n", $text);
 
 foreach my $p (@parts){
     next if $p =~ /^\/\//;
-    ok($p =~ /^zone \S+ {type master; file "/, 'testing output: ' . $p);
+    ok($p =~ /^zone \S+ \{type master; file "/, 'testing output: ' . $p);
 }
 
 done_testing();
