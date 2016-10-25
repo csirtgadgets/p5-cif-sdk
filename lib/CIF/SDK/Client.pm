@@ -54,7 +54,7 @@ use constant {
         'Content-Type'  => 'application/json',
     },
     AGENT   => 'cif-sdk-perl/'.$CIF::SDK::VERSION,
-    TIMEOUT => 1,
+    TIMEOUT => 120,
     REMOTE  => 'https://localhost',
 };
 
