@@ -10,8 +10,4 @@ before_install:
 notifications:
     email:
         on_success: never
-        on_failure: always
-branches:
-    only:
-        - master
-        - develop
+        on_failure: never
