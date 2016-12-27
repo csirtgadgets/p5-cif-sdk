@@ -190,8 +190,7 @@ sub _make_request {
                 $resp->{'content'} = $ret;
             } catch {
                 my $err = shift;
-                $Logger->debug($err);
-                unless($err =~ /Data input to gunzip is not in gzip format/){
+                unless($err =~ /Data input to (\S+) is not in (\S+) format/){
                     die($err);
                 }
             };
