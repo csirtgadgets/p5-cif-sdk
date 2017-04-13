@@ -398,7 +398,7 @@ if($ping){
         
         if($aggregate){
             $Logger->info('aggregating...');
-            $ret = $cli->aggregate({
+            $data = $cli->aggregate({
                 data        => $data,
                 aggregate   => $aggregate,
             });
