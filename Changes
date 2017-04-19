@@ -1,5 +1,8 @@
 Revision history for CIF-SDK
 
+2.01 - 2017-04-19
+    - bugfix to bro output
+
 2.00	- 2016-12-27
     - bugfix to zip error catching
 
