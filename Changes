@@ -1,5 +1,8 @@
 Revision history for CIF-SDK
 
+2.02 - 2017-04-19
+    - bugfix to sha1|sha256 feeds
+
 2.01 - 2017-04-19
     - bugfix to bro output
 
