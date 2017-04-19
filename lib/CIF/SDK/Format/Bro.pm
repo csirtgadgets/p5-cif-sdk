@@ -17,7 +17,7 @@ use constant type_hash => {
     'url'   => 'URL',
     'fqdn'  => 'DOMAIN',
     'email' => 'EMAIL',
-    'hash'  => 'FILE_HASH',
+    'md5'  => 'FILE_HASH',
 };
     
 sub understands {
