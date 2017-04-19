@@ -13,11 +13,14 @@ with 'CIF::SDK::Format';
 use Data::Dumper;
 
 use constant type_hash => {
-    'ipv4'  => 'ADDR',
-    'url'   => 'URL',
-    'fqdn'  => 'DOMAIN',
-    'email' => 'EMAIL',
-    'md5'  => 'FILE_HASH',
+    'ipv4'    => 'ADDR',
+    'url'     => 'URL',
+    'fqdn'    => 'DOMAIN',
+    'email'   => 'EMAIL',
+    'md5'     => 'FILE_HASH',
+    'sha1'    => 'FILE_HASH',
+    'sha256'  => 'FILE_HASH',
+    'sha512'  => 'FILE_HASH',
 };
     
 sub understands {
