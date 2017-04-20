@@ -8,6 +8,12 @@ use Text::Table;
 
 with 'CIF::SDK::Format';
 
+use constant PROTOCOLS => {
+    1   => 'ICMP',
+    6   => 'TCP',
+    17  => 'UDP',
+};
+
 sub understands {
     my $self = shift;
     my $args = shift;
@@ -27,6 +33,11 @@ sub process {
         my @array;
         foreach my $c (@{$self->get_columns()}){
             my $x = $d->{$c};
+            if($c eq 'protocol'){
+                if($x && exists(PROTOCOLS->{$x})){
+                    $x = PROTOCOLS->{$x}
+                }
+            }
             $x = join(',',@$x) if(ref($x) eq 'ARRAY');
             push(@array,$x);
         }
