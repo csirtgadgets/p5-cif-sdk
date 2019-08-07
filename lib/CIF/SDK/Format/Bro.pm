@@ -14,6 +14,7 @@ use Data::Dumper;
 
 use constant type_hash => {
     'ipv4'    => 'ADDR',
+    'cidr'    => 'SUBNET',
     'url'     => 'URL',
     'fqdn'    => 'DOMAIN',
     'email'   => 'EMAIL',
@@ -41,6 +42,9 @@ sub process {
     foreach my $d (@$data){
         if($d->{'otype'} eq 'url'){
             $d->{'observable'} =~ s/^https?:\/\///g; # https://github.com/csirtgadgets/p5-cif-sdk/issues/19
+        }
+        elsif($d->{'otype'} eq 'ipv4' && $d->{'observable'} =~ '/'){
+               $d->{'otype'} = 'cidr';
         }
         my @array;
         foreach my $c (('observable','otype','tags','confidence','provider')){
